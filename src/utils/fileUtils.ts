@@ -13,8 +13,15 @@ export function getFullPath(fileName: string): string | null {
 		fileName = `${fileName}.tex`;
 	}
 
-	const currentWorkingDir = process.cwd();
+	const currentWorkingDir = getWorkspaceFolder();
 	return path.join(currentWorkingDir, fileName);
+}
+
+function getWorkspaceFolder() {
+	if (vscode.workspace.workspaceFolders) {
+		return vscode.workspace.workspaceFolders[0].uri.fsPath;
+	}
+	return process.cwd();
 }
 
 export function createFile(fullPath: string): boolean {
