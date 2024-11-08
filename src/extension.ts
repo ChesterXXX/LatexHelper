@@ -1,26 +1,53 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import { applyHover, highlightInputs } from "./decorations/inputDecoration";
+import { provideDocumentLinks } from "./links/inputDocumentLinks";
+import { openTexFileInTab } from "./commands/openTexFileCommand";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "latex-helper" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('latex-helper.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World! from LaTeX Helper!');
+	// Hello world!
+	context.subscriptions.push(
+		vscode.commands.registerCommand("latex-helper.helloWorld", () => {
+			console.log("Hello World!!");
+			vscode.window.showInformationMessage("Hello World! Welcome to LaTeX Helper!");
+		})
+	);
+
+	// Apply some decoration to \input{filename} on any text change
+	vscode.workspace.onDidChangeTextDocument((event) => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor && event.document === editor.document) {
+			highlightInputs(editor);
+		}
 	});
 
-	context.subscriptions.push(disposable);
+	// Apply some decoration to \input{filename} on switching to a new tab
+	vscode.window.onDidChangeActiveTextEditor((editor) => {
+        if (editor) {
+            highlightInputs(editor);
+        }
+    });
+
+	// Apply some decoration to \input{filename} on opening a new file
+    if (vscode.window.activeTextEditor) {
+        highlightInputs(vscode.window.activeTextEditor);
+    }
+
+	// Add a hover text to \input{filename}
+	vscode.languages.registerHoverProvider("*", {
+		provideHover: applyHover,
+	});
+
+	// Make each \input{filename} into a link
+	context.subscriptions.push(
+		vscode.languages.registerDocumentLinkProvider("*", {
+			provideDocumentLinks: provideDocumentLinks,
+		})
+	);
+
+	// Create a filename.tex if necessary, and open it in a new tab (or switch to existing tab)
+	vscode.commands.registerCommand("openTexFileInTab", (arg) => openTexFileInTab(arg));
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
