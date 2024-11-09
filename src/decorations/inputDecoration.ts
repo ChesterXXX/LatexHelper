@@ -40,7 +40,7 @@ export function applyInputHighlights(editor: vscode.TextEditor) {
 }
 
 export function removeInputHighlights(editor: vscode.TextEditor) {
-	console.log("Removed all decorations.");
+	console.log("Removed all input decorations.");
 	setInputDecoration();
 	if (inputDecoration) {
 		editor.setDecorations(inputDecoration, []);

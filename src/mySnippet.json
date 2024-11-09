@@ -1,0 +1,7 @@
+{
+	"figurePath": {
+		"prefix": ["fig/"],
+		"body": ["\\includegraphics{${TM_SELECTED_TEXT}}"],
+		"when": "editorTextFocus && /fig\\/.+\\/.+\\s+$/"
+	}
+}
