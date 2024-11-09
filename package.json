@@ -19,6 +19,18 @@
 				"command": "latex-helper.helloWorld",
 				"title": "Hello World"
 			}
+		],
+		"configuration":[
+			{
+				"title": "LaTeX Helper Configuration",
+				"properties": {
+					"latex-helper.inputTextHighlightColor" : {
+						"type":"string",
+						"default": "DodgerBlue",
+						"description": "Color to highlight the text inside \\input{}."
+					}
+				}
+			}
 		]
 	},
 	"scripts": {

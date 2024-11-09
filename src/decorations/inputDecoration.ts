@@ -1,12 +1,23 @@
 import * as vscode from "vscode";
 
-const inputDecoration = vscode.window.createTextEditorDecorationType({
-	color: "red",
-	fontStyle: "italic",
-	textDecoration: "underline",
-});
+// const inputDecoration = vscode.window.createTextEditorDecorationType({
+// 	color: "red",
+// 	fontStyle: "italic",
+// 	textDecoration: "underline",
+// });
 
-export function highlightInputs(editor: vscode.TextEditor){
+function getInputDecoration() {
+	const config = vscode.workspace.getConfiguration("latex-helper");
+	const color = config.get("inputTextHighlightColor", "DodgerBlue");
+	const inputDecoration = vscode.window.createTextEditorDecorationType({
+		color: color,
+		fontStyle: "italic",
+		textDecoration: "underline",
+	});
+	return inputDecoration;
+}
+
+export function highlightInputs(editor: vscode.TextEditor) {
 	const document = editor.document;
 	const inputRegex = /\\input\{([^}]+)\}/g;
 	const decorations: vscode.DecorationOptions[] = [];
@@ -20,19 +31,20 @@ export function highlightInputs(editor: vscode.TextEditor){
 		decorations.push(decoration);
 	}
 	if (decorations.length > 0) {
+		const inputDecoration = getInputDecoration();
 		editor.setDecorations(inputDecoration, decorations);
 	}
-};
+}
 
 export function applyHover(document: vscode.TextDocument, position: vscode.Position) {
-    const range = document.getWordRangeAtPosition(position, /\\input{([^}]*)}/);
-    if (range) {
-        const wordMathces = document.getText(range).match(/\\input{([^}]*)}/);
-        if (wordMathces) {
-            const word = wordMathces[1].trim();
-            console.log(`Input is : ${word}`);
-            return new vscode.Hover(`Open in new tab : ${word}`);
-        }
-    }
-    return undefined;
+	const range = document.getWordRangeAtPosition(position, /\\input{([^}]*)}/);
+	if (range) {
+		const wordMathces = document.getText(range).match(/\\input{([^}]*)}/);
+		if (wordMathces) {
+			const word = wordMathces[1].trim();
+			console.log(`Input is : ${word}`);
+			return new vscode.Hover(`Open in new tab : ${word}`);
+		}
+	}
+	return undefined;
 }
