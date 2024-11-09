@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { inputHoverProvider, applyInputHighlights, removeInputHighlights } from "./decorations/inputDecoration";
+import { applyInputHighlights, removeInputHighlights } from "./decorations/inputDecoration";
 import { inputDocumentLinksProvider } from "./links/inputDocumentLinks";
 import { openTexFileInTab } from "./commands/openTexFileCommand";
+import { inputHoverProvider } from "./decorations/inputHoverProvider";
 
 let inputHoverProviderDisposable: vscode.Disposable | undefined;
 let inputDocumentLinkDisposable: vscode.Disposable | undefined;
@@ -15,21 +16,27 @@ function applyInputEffectsIfLatex(document: vscode.TextDocument) {
 	if (document.languageId === "latex") {
 		applyInputHighlights(editor);
 
-		inputHoverProviderDisposable = vscode.languages.registerHoverProvider(
-			{ language: "latex" },
-			{
-				provideHover: inputHoverProvider,
-			}
-		);
+		if (!inputHoverProviderDisposable) {
+			inputHoverProviderDisposable = vscode.languages.registerHoverProvider(
+				{ language: "latex" },
+				{
+					provideHover: inputHoverProvider,
+				}
+			);
+		}
 
-		inputDocumentLinkDisposable = vscode.languages.registerDocumentLinkProvider(
-			{ language: "latex" },
-			{
-				provideDocumentLinks: inputDocumentLinksProvider,
-			}
-		);
-
-		openTexFileInTabDisposable = vscode.commands.registerCommand("openTexFileInTab", (arg) => openTexFileInTab(arg));
+		if (!inputDocumentLinkDisposable) {
+			inputDocumentLinkDisposable = vscode.languages.registerDocumentLinkProvider(
+				{ language: "latex" },
+				{
+					provideDocumentLinks: inputDocumentLinksProvider,
+				}
+			);
+		}
+		if (!openTexFileInTabDisposable) {
+			console.log('hi');
+			openTexFileInTabDisposable = vscode.commands.registerCommand("openTexFileInTab", (arg) => openTexFileInTab(arg));
+		}
 	} else {
 		removeInputEffects();
 	}
@@ -63,12 +70,12 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	// Hello world!
-	context.subscriptions.push(
-		vscode.commands.registerCommand("latex-helper.helloWorld", () => {
-			console.log("Hello World!!");
-			vscode.window.showInformationMessage("Hello World! Welcome to LaTeX Helper!");
-		})
-	);
+	// context.subscriptions.push(
+	// 	vscode.commands.registerCommand("latex-helper.helloWorld", () => {
+	// 		console.log("Hello World!!");
+	// 		vscode.window.showInformationMessage("Hello World! Welcome to LaTeX Helper!");
+	// 	})
+	// );
 
 	context.subscriptions.push(
 		vscode.workspace.onDidOpenTextDocument(applyInputEffectsIfLatex),

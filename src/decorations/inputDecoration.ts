@@ -33,7 +33,6 @@ export function applyInputHighlights(editor: vscode.TextEditor) {
 	const document = editor.document;
 
 	const decorations = getInputDecorationRanges(document);
-	// inputDecoration =
 	setInputDecoration();
 	if (decorations.length > 0 && inputDecoration) {
 		editor.setDecorations(inputDecoration, decorations);
@@ -50,15 +49,3 @@ export function removeInputHighlights(editor: vscode.TextEditor) {
 	}
 }
 
-export function inputHoverProvider(document: vscode.TextDocument, position: vscode.Position) {
-	const range = document.getWordRangeAtPosition(position, /\\input{([^}]*)}/);
-	if (range) {
-		const wordMathces = document.getText(range).match(/\\input{([^}]*)}/);
-		if (wordMathces) {
-			const word = wordMathces[1].trim();
-			console.log(`Input is : ${word}`);
-			return new vscode.Hover(`Open in new tab : ${word}`);
-		}
-	}
-	return undefined;
-}
