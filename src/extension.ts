@@ -1,10 +1,66 @@
 import * as vscode from "vscode";
-import { applyHover, highlightInputs } from "./decorations/inputDecoration";
-import { provideDocumentLinks } from "./links/inputDocumentLinks";
+import { inputHoverProvider, applyInputHighlights, removeInputHighlights } from "./decorations/inputDecoration";
+import { inputDocumentLinksProvider } from "./links/inputDocumentLinks";
 import { openTexFileInTab } from "./commands/openTexFileCommand";
 
+let inputHoverProviderDisposable: vscode.Disposable | undefined;
+let inputDocumentLinkDisposable: vscode.Disposable | undefined;
+let openTexFileInTabDisposable: vscode.Disposable | undefined;
+
+function applyInputEffectsIfLatex(document: vscode.TextDocument) {
+	const editor = vscode.window.activeTextEditor;
+	if (!editor || !document) {
+		return;
+	}
+	if (document.languageId === "latex") {
+		applyInputHighlights(editor);
+
+		inputHoverProviderDisposable = vscode.languages.registerHoverProvider(
+			{ language: "latex" },
+			{
+				provideHover: inputHoverProvider,
+			}
+		);
+
+		inputDocumentLinkDisposable = vscode.languages.registerDocumentLinkProvider(
+			{ language: "latex" },
+			{
+				provideDocumentLinks: inputDocumentLinksProvider,
+			}
+		);
+
+		openTexFileInTabDisposable = vscode.commands.registerCommand("openTexFileInTab", (arg) => openTexFileInTab(arg));
+	} else {
+		removeInputEffects();
+	}
+}
+
+function removeInputEffects() {
+	const editor = vscode.window.activeTextEditor;
+	if (editor) {
+		removeInputHighlights(editor);
+	}
+	if (inputHoverProviderDisposable) {
+		inputHoverProviderDisposable.dispose();
+		inputHoverProviderDisposable = undefined;
+	}
+	if (inputDocumentLinkDisposable) {
+		inputDocumentLinkDisposable.dispose();
+		inputDocumentLinkDisposable = undefined;
+	}
+	if (openTexFileInTabDisposable) {
+		openTexFileInTabDisposable.dispose();
+		openTexFileInTabDisposable = undefined;
+	}
+}
+
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Congratulations, your extension "latex-helper" is now active!');
+	console.log('The extension "latex-helper" is now active!');
+
+	const editor = vscode.window.activeTextEditor;
+	if (editor) {
+		applyInputEffectsIfLatex(editor.document);
+	}
 
 	// Hello world!
 	context.subscriptions.push(
@@ -14,40 +70,31 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	// Apply some decoration to \input{filename} on any text change
-	vscode.workspace.onDidChangeTextDocument((event) => {
-		const editor = vscode.window.activeTextEditor;
-		if (editor && event.document === editor.document) {
-			highlightInputs(editor);
-		}
-	});
-
-	// Apply some decoration to \input{filename} on switching to a new tab
-	vscode.window.onDidChangeActiveTextEditor((editor) => {
-        if (editor) {
-            highlightInputs(editor);
-        }
-    });
-
-	// Apply some decoration to \input{filename} on opening a new file
-    if (vscode.window.activeTextEditor) {
-        highlightInputs(vscode.window.activeTextEditor);
-    }
-
-	// Add a hover text to \input{filename}
-	vscode.languages.registerHoverProvider("*", {
-		provideHover: applyHover,
-	});
-
-	// Make each \input{filename} into a link
 	context.subscriptions.push(
-		vscode.languages.registerDocumentLinkProvider("*", {
-			provideDocumentLinks: provideDocumentLinks,
+		vscode.workspace.onDidOpenTextDocument(applyInputEffectsIfLatex),
+		vscode.workspace.onDidCloseTextDocument(removeInputEffects),
+		vscode.workspace.onDidChangeTextDocument((event) => {
+			const editor = vscode.window.activeTextEditor;
+			if (editor && editor.document === event.document) {
+				applyInputEffectsIfLatex(editor.document);
+			}
+		}),
+		vscode.window.onDidChangeActiveTextEditor((editor) => {
+			if (editor && editor.document.languageId === "latex") {
+				applyInputEffectsIfLatex(editor.document);
+			} else if (editor) {
+				removeInputHighlights(editor);
+			}
 		})
 	);
 
-	// Create a filename.tex if necessary, and open it in a new tab (or switch to existing tab)
-	vscode.commands.registerCommand("openTexFileInTab", (arg) => openTexFileInTab(arg));
+	vscode.window.onDidChangeActiveTextEditor((editor) => {
+		if (editor) {
+			applyInputEffectsIfLatex(editor.document);
+		}
+	});
 }
 
-export function deactivate() {}
+export function deactivate() {
+	removeInputEffects();
+}

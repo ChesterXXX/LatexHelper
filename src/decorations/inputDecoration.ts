@@ -1,42 +1,56 @@
 import * as vscode from "vscode";
+import { getInputs } from "../utils/inputRanges";
 
-// const inputDecoration = vscode.window.createTextEditorDecorationType({
-// 	color: "red",
-// 	fontStyle: "italic",
-// 	textDecoration: "underline",
-// });
+let inputDecoration: vscode.TextEditorDecorationType | undefined;
 
-function getInputDecoration() {
+function setInputDecoration() {
 	const config = vscode.workspace.getConfiguration("latex-helper");
 	const color = config.get("inputTextHighlightColor", "DodgerBlue");
-	const inputDecoration = vscode.window.createTextEditorDecorationType({
+	if (inputDecoration) {
+		inputDecoration.dispose();
+	}
+	inputDecoration = vscode.window.createTextEditorDecorationType({
 		color: color,
 		fontStyle: "italic",
 		textDecoration: "underline",
 	});
-	return inputDecoration;
 }
 
-export function highlightInputs(editor: vscode.TextEditor) {
-	const document = editor.document;
-	const inputRegex = /\\input\{([^}]+)\}/g;
+function getInputDecorationRanges(document: vscode.TextDocument) {
 	const decorations: vscode.DecorationOptions[] = [];
-	let match;
-	while ((match = inputRegex.exec(document.getText())) !== null) {
-		const startPos = document.positionAt(match.index + 7);
-		const endPos = document.positionAt(match.index + 7 + match[1].length);
+	const inputs = getInputs(document);
+	inputs.forEach((input) => {
 		const decoration: vscode.DecorationOptions = {
-			range: new vscode.Range(startPos, endPos),
+			range: input.range,
 		};
 		decorations.push(decoration);
-	}
-	if (decorations.length > 0) {
-		const inputDecoration = getInputDecoration();
+	});
+
+	return decorations;
+}
+
+export function applyInputHighlights(editor: vscode.TextEditor) {
+	const document = editor.document;
+
+	const decorations = getInputDecorationRanges(document);
+	// inputDecoration =
+	setInputDecoration();
+	if (decorations.length > 0 && inputDecoration) {
 		editor.setDecorations(inputDecoration, decorations);
 	}
 }
 
-export function applyHover(document: vscode.TextDocument, position: vscode.Position) {
+export function removeInputHighlights(editor: vscode.TextEditor) {
+	console.log("Removed all decorations.");
+	setInputDecoration();
+	if (inputDecoration) {
+		editor.setDecorations(inputDecoration, []);
+		inputDecoration.dispose();
+		inputDecoration = undefined;
+	}
+}
+
+export function inputHoverProvider(document: vscode.TextDocument, position: vscode.Position) {
 	const range = document.getWordRangeAtPosition(position, /\\input{([^}]*)}/);
 	if (range) {
 		const wordMathces = document.getText(range).match(/\\input{([^}]*)}/);
