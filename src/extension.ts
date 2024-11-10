@@ -6,7 +6,7 @@ import { watchCachedFiles } from "./utils/cacheUtils";
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('The extension "latex-helper" is now active!');
-
+	
 	// Hello world!
 	context.subscriptions.push(
 		vscode.commands.registerCommand("latex-helper.helloWorld", () => {
@@ -14,7 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage("Hello World! Welcome to LaTeX Helper!");
 		})
 	);
-	
+
 	figureActivation(context);
 	inputTextActivate(context);
 	importTextActivate(context);

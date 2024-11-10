@@ -6,26 +6,30 @@ import chokidar from "chokidar";
 
 const cacheFileName = "latex-helper.json";
 
+function isWorkspaceAvailable(): boolean {
+	return vscode.workspace.workspaceFolders !== undefined;
+}
+
 function getCacheFilePath(): string {
-	const workspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-	if (workspace) {
-		return path.join(workspace, ".vscode", cacheFileName);
-	} else {
-		return path.join(process.cwd(), cacheFileName);
-	}
+	return path.join(process.cwd(), cacheFileName);
 }
 
 export function getCachedFiles(): string[] {
-	const cachePath = getCacheFilePath();
-	if (!fs.existsSync(cachePath)) {
-		saveCachedFiles([]);
-	}
-	try {
-		const cache = fs.readFileSync(cachePath, "utf-8");
-		return JSON.parse(cache);
-	} catch (err) {
-		console.error("Error reading cache:", err);
-		return [];
+	if (isWorkspaceAvailable()) {
+		const workspaceConfig = vscode.workspace.getConfiguration();
+		return workspaceConfig.get<string[]>("latex-helper", []);
+	} else {
+		const cachePath = getCacheFilePath();
+		if (!fs.existsSync(cachePath)) {
+			saveCachedFiles([]);
+		}
+		try {
+			const cache = fs.readFileSync(cachePath, "utf-8");
+			return JSON.parse(cache);
+		} catch (err) {
+			console.error("Error reading cache:", err);
+			return [];
+		}
 	}
 }
 
@@ -51,7 +55,7 @@ export function watchCachedFiles() {
 			setupSVGWatcher(file);
 			svgFileExists = true;
 		} else {
-            svgFileExists = false;
+			svgFileExists = false;
 			removeWatcher(svgWatchers, svgFilePath);
 		}
 
@@ -59,7 +63,7 @@ export function watchCachedFiles() {
 			setupPdfTexWatcher(file);
 			pdftexFileExists = true;
 		} else {
-            pdftexFileExists = false;
+			pdftexFileExists = false;
 			removeWatcher(pdfTexWatchers, pdftexFilePath);
 		}
 
@@ -79,9 +83,14 @@ export function addCachedFiles(filename: string) {
 
 function saveCachedFiles(files: string[]) {
 	try {
-		const cachePath = getCacheFilePath();
-		fs.mkdirSync(path.dirname(cachePath), { recursive: true });
-		fs.writeFileSync(cachePath, JSON.stringify(files, null, 2), "utf-8");
+		if (isWorkspaceAvailable()) {
+			const workspaceConfig = vscode.workspace.getConfiguration();
+			workspaceConfig.update("latex-helper", files, vscode.ConfigurationTarget.Workspace);
+		} else {
+			const cachePath = getCacheFilePath();
+			fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+			fs.writeFileSync(cachePath, JSON.stringify(files, null, 2), "utf-8");
+		}
 	} catch (err) {
 		console.error("Error writing cache:", err);
 	}
