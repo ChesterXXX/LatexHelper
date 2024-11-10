@@ -35,6 +35,16 @@
 						"type": "string",
 						"default": "DodgerBlue",
 						"description": "Color to highlight the text inside \\input{}."
+					},
+					"latex-helper.importDirectoryTextHighlightColor": {
+						"type": "string",
+						"default": "DarkGreen",
+						"description": "Color to highlight the directory inside \\import{dir}{filename}."
+					},
+					"latex-helper.importFilenameTextHighlightColor": {
+						"type": "string",
+						"default": "DarkRed",
+						"description": "Color to highlight the filename inside \\import{dir}{filename}."
 					}
 				}
 			}

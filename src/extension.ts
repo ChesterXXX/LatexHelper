@@ -4,10 +4,15 @@ import { applyInputHighlights, removeInputHighlights } from "./decorations/input
 import { inputDocumentLinksProvider } from "./links/inputDocumentLinks";
 import { openTexFileInTab } from "./commands/openTexFileCommand";
 import { inputHoverProvider } from "./decorations/inputHoverProvider";
+import { applyImportHighlights, removeImportHighlights } from "./decorations/importDecoration";
+import { importDocumentLinksProvider } from "./links/importDocumentLinks";
 
 let inputHoverProviderDisposable: vscode.Disposable | undefined;
 let inputDocumentLinkDisposable: vscode.Disposable | undefined;
 let openTexFileInTabDisposable: vscode.Disposable | undefined;
+
+let importHoverProviderDisposable: vscode.Disposable | undefined;
+let importDocumentLinkDisposable: vscode.Disposable | undefined;
 
 function applyInputEffectsIfLatex(document: vscode.TextDocument) {
 	const editor = vscode.window.activeTextEditor;
@@ -62,6 +67,59 @@ function removeInputEffects() {
 	console.log("Removed all input effects.");
 }
 
+function applyImportEffectsIfLatex(document: vscode.TextDocument) {
+	const editor = vscode.window.activeTextEditor;
+	if (!editor || !document) {
+		return;
+	}
+	if (document.languageId === "latex") {
+		applyImportHighlights(editor);
+
+		// if (!inputHoverProviderDisposable) {
+		// 	inputHoverProviderDisposable = vscode.languages.registerHoverProvider(
+		// 		{ language: "latex" },
+		// 		{
+		// 			provideHover: inputHoverProvider,
+		// 		}
+		// 	);
+		// }
+
+		if (!importDocumentLinkDisposable) {
+			importDocumentLinkDisposable = vscode.languages.registerDocumentLinkProvider(
+				{ language: "latex" },
+				{
+					provideDocumentLinks: importDocumentLinksProvider,
+				}
+			);
+		}
+		// if (!openTexFileInTabDisposable) {
+		// 	openTexFileInTabDisposable = vscode.commands.registerCommand("openTexFileInTab", (arg) => openTexFileInTab(arg));
+		// }
+	} else {
+		removeImportEffects();
+	}
+}
+
+function removeImportEffects() {
+	const editor = vscode.window.activeTextEditor;
+	if (editor) {
+		removeImportHighlights(editor);
+	}
+	// if (inputHoverProviderDisposable) {
+	// 	inputHoverProviderDisposable.dispose();
+	// 	inputHoverProviderDisposable = undefined;
+	// }
+	if (importDocumentLinkDisposable) {
+		importDocumentLinkDisposable.dispose();
+		importDocumentLinkDisposable = undefined;
+	}
+	// if (openTexFileInTabDisposable) {
+	// 	openTexFileInTabDisposable.dispose();
+	// 	openTexFileInTabDisposable = undefined;
+	// }
+	console.log("Removed all import effects.");
+}
+
 function inputTextActivation(context: vscode.ExtensionContext) {
 	const editor = vscode.window.activeTextEditor;
 	if (editor) {
@@ -91,6 +149,39 @@ function inputTextActivation(context: vscode.ExtensionContext) {
 			applyInputEffectsIfLatex(editor.document);
 		}
 	});
+	console.log("Applied input effects.");
+}
+
+function importTextActivation(context: vscode.ExtensionContext) {
+	const editor = vscode.window.activeTextEditor;
+	if (editor) {
+		applyImportEffectsIfLatex(editor.document);
+	}
+
+	context.subscriptions.push(
+		vscode.workspace.onDidOpenTextDocument(applyImportEffectsIfLatex),
+		vscode.workspace.onDidCloseTextDocument(removeImportEffects),
+		vscode.workspace.onDidChangeTextDocument((event) => {
+			const editor = vscode.window.activeTextEditor;
+			if (editor && editor.document === event.document) {
+				applyImportEffectsIfLatex(editor.document);
+			}
+		}),
+		vscode.window.onDidChangeActiveTextEditor((editor) => {
+			if (editor && editor.document.languageId === "latex") {
+				applyImportEffectsIfLatex(editor.document);
+			} else if (editor) {
+				removeImportHighlights(editor);
+			}
+		})
+	);
+
+	vscode.window.onDidChangeActiveTextEditor((editor) => {
+		if (editor) {
+			applyImportEffectsIfLatex(editor.document);
+		}
+	});
+	console.log("Applied import effects.");
 }
 
 function figureActivation(context: vscode.ExtensionContext) {
@@ -205,11 +296,9 @@ function figureActivation(context: vscode.ExtensionContext) {
 
 			const snippet = new vscode.SnippetString(replacementString);
 
-			editor
-				.insertSnippet(snippet, range)
-				.then(() => {
-					vscode.window.showInformationMessage(`Text replaced with the formatted string.`);
-				});
+			editor.insertSnippet(snippet, range).then(() => {
+				vscode.window.showInformationMessage(`Text replaced with the formatted string.`);
+			});
 		}
 	}
 
@@ -227,6 +316,7 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 	inputTextActivation(context);
+	importTextActivation(context);
 	figureActivation(context);
 }
 

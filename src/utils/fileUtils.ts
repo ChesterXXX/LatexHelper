@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 export function getFullPath(fileName: string): string | null {
 	const regex = /^([a-zA-Z0-9-_./]+\/)?([a-zA-Z0-9-_]+)(\.[a-zA-Z0-9]+)?$/;
 	if (!regex.test(fileName)) {
-		vscode.window.showErrorMessage("Invalid input format. Ensure it's in 'some/path/filename' format.");
+		vscode.window.showErrorMessage(`Invalid input format : ${fileName}\nEnsure it's in 'some/path/filename' format.`);
 		return null;
 	}
 
