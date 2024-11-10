@@ -51,6 +51,11 @@
 						"default": "Crimson",
 						"description": "Color to highlight the extension inside \\import{dir}{filename.pdf_tex}."
 					},
+					"latex-helper.inkscapeExecutableLocation": {
+						"type": "string",
+						"default": "C:\\src\\InkScape\\bin\\inkscape.exe",
+						"description": "Default location of InkScape executable."
+					},
 					"latex-helper.svgWidth": {
 						"type": "number",
 						"default": 160,
@@ -89,5 +94,8 @@
 		"typescript": "^5.6.3",
 		"webpack": "^5.95.0",
 		"webpack-cli": "^5.1.4"
+	},
+	"dependencies": {
+		"chokidar": "^4.0.1"
 	}
 }

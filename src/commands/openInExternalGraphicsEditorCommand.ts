@@ -1,37 +1,40 @@
 import * as vscode from "vscode";
 import { createFile, createSVGFile, getFullPath, openFileInTab } from "../utils/fileUtils";
 import path from "path";
+import { setupSVGWatcher } from "../utils/fileWatchers";
+import { openInInkscape } from "../utils/inkscapeUtils";
 
 export function openInExternalGraphicsEditor(arg: any) {
-    const directory = arg["directory"];
-
+	const directory = arg["directory"];
 	if (!directory) {
 		vscode.window.showWarningMessage("No directory provided.");
 		return;
 	}
 
-	const fileName = arg["fileName"];
-
-	if (!fileName) {
+	const pdftexFileName = arg["fileName"];
+	if (!pdftexFileName) {
 		vscode.window.showWarningMessage("No filename provided.");
 		return;
 	}
 
-	const imageName = path.basename(fileName, '.pdf_tex');
+	const pdftexFilePath = path.posix.join(directory, pdftexFileName);
+	const pdftexFullPath = getFullPath(pdftexFilePath);
 
-	const svgFilename = `${imageName}.svg`;
-
-    const svgPath = path.posix.join(directory, svgFilename);
-	console.log(`Import SVG is : ${svgPath}`);
-
-	const svgFullPath = getFullPath(svgPath);
-	console.log(`SVG file is ${svgFullPath}`);
-	if (!svgFullPath) {
+	if (!pdftexFullPath) {
 		return;
 	}
 
-	if (!createSVGFile(svgFullPath)) {
+	const imageFullPath = pdftexFullPath.slice(0, -".pdf_tex".length);
+
+	if (!imageFullPath) {
 		return;
 	}
 
+	if (!createSVGFile(imageFullPath)) {
+		return;
+	}
+
+	setupSVGWatcher(imageFullPath);
+
+	openInInkscape(imageFullPath);
 }

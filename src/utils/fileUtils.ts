@@ -54,24 +54,25 @@ export function createFile(fullPath: string): boolean {
 	}
 }
 
-export function createSVGFile(fullPath: string): boolean {
+export function createSVGFile(imageFullPath: string): boolean {
 	// <svg width="160" height="80" viewBox="0 0 160 80" />
+	const svgFullPath = `${imageFullPath}.svg`;
 	try {
-		if (fs.existsSync(fullPath)) {
-			console.log(`SVG file exists : ${fullPath}.`);
+		if (fs.existsSync(svgFullPath)) {
+			console.log(`SVG file exists : ${svgFullPath}.`);
 			return true;
 		}
-		const dir = path.dirname(fullPath);
+		const dir = path.dirname(svgFullPath);
 		if (!fs.existsSync(dir)) {
 			fs.mkdirSync(dir, { recursive: true });
 			console.log(`Created directories: ${dir}`);
 		}
 		const svgTemplate = getSVGTemplate();
-		fs.writeFileSync(fullPath, svgTemplate);
-		console.log(`Created new SVG file : ${fullPath}`);
+		fs.writeFileSync(svgFullPath, svgTemplate);
+		console.log(`Created new SVG file : ${svgFullPath}`);
 		return true;
 	} catch (error) {
-		vscode.window.showErrorMessage(`Failed to create the svg file :\n${fullPath}`);
+		vscode.window.showErrorMessage(`Failed to create the svg file :\n${svgFullPath}`);
 		return false;
 	}
 }
