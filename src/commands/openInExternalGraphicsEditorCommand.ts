@@ -1,34 +1,37 @@
 import * as vscode from "vscode";
-import { createFile, getFullPath, openFile } from "../utils/fileUtils";
+import { createFile, createSVGFile, getFullPath, openFileInTab } from "../utils/fileUtils";
 import path from "path";
 
 export function openInExternalGraphicsEditor(arg: any) {
     const directory = arg["directory"];
 
 	if (!directory) {
-		vscode.window.showInformationMessage("No directory provided.");
+		vscode.window.showWarningMessage("No directory provided.");
 		return;
 	}
 
 	const fileName = arg["fileName"];
 
 	if (!fileName) {
-		vscode.window.showInformationMessage("No filename provided.");
+		vscode.window.showWarningMessage("No filename provided.");
 		return;
 	}
 
-    const filePath = path.join(directory, fileName);
-	console.log(`Import file is : ${filePath}`);
+	const imageName = path.basename(fileName, '.pdf_tex');
 
-	const fullPath = getFullPath(fileName);
+	const svgFilename = `${imageName}.svg`;
 
-	if (!fullPath) {
+    const svgPath = path.posix.join(directory, svgFilename);
+	console.log(`Import SVG is : ${svgPath}`);
+
+	const svgFullPath = getFullPath(svgPath);
+	console.log(`SVG file is ${svgFullPath}`);
+	if (!svgFullPath) {
 		return;
 	}
 
-	// if (!createFile(fullPath)) {
-	// 	return;
-	// }
+	if (!createSVGFile(svgFullPath)) {
+		return;
+	}
 
-	// openFile(fullPath);
 }

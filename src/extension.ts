@@ -3,16 +3,17 @@ import * as vscode from "vscode";
 import { applyInputHighlights, removeInputHighlights } from "./decorations/inputDecoration";
 import { inputDocumentLinksProvider } from "./links/inputDocumentLinks";
 import { openTexFileInTab } from "./commands/openTexFileCommand";
-import { inputHoverProvider } from "./decorations/inputHoverProvider";
+// import { inputHoverProvider } from "./decorations/inputHoverProvider";
 import { applyImportHighlights, removeImportHighlights } from "./decorations/importDecoration";
 import { importDocumentLinksProvider } from "./links/importDocumentLinks";
+import { openInExternalGraphicsEditor } from "./commands/openInExternalGraphicsEditorCommand";
 
-let inputHoverProviderDisposable: vscode.Disposable | undefined;
+// let inputHoverProviderDisposable: vscode.Disposable | undefined;
 let inputDocumentLinkDisposable: vscode.Disposable | undefined;
 let openTexFileInTabDisposable: vscode.Disposable | undefined;
 
-let importHoverProviderDisposable: vscode.Disposable | undefined;
 let importDocumentLinkDisposable: vscode.Disposable | undefined;
+let openInExternalGraphicsEditorDisposable: vscode.Disposable | undefined;
 
 function applyInputEffectsIfLatex(document: vscode.TextDocument) {
 	const editor = vscode.window.activeTextEditor;
@@ -22,14 +23,14 @@ function applyInputEffectsIfLatex(document: vscode.TextDocument) {
 	if (document.languageId === "latex") {
 		applyInputHighlights(editor);
 
-		if (!inputHoverProviderDisposable) {
-			inputHoverProviderDisposable = vscode.languages.registerHoverProvider(
-				{ language: "latex" },
-				{
-					provideHover: inputHoverProvider,
-				}
-			);
-		}
+		// if (!inputHoverProviderDisposable) {
+		// 	inputHoverProviderDisposable = vscode.languages.registerHoverProvider(
+		// 		{ language: "latex" },
+		// 		{
+		// 			provideHover: inputHoverProvider,
+		// 		}
+		// 	);
+		// }
 
 		if (!inputDocumentLinkDisposable) {
 			inputDocumentLinkDisposable = vscode.languages.registerDocumentLinkProvider(
@@ -45,6 +46,7 @@ function applyInputEffectsIfLatex(document: vscode.TextDocument) {
 	} else {
 		removeInputEffects();
 	}
+	
 }
 
 function removeInputEffects() {
@@ -52,10 +54,10 @@ function removeInputEffects() {
 	if (editor) {
 		removeInputHighlights(editor);
 	}
-	if (inputHoverProviderDisposable) {
-		inputHoverProviderDisposable.dispose();
-		inputHoverProviderDisposable = undefined;
-	}
+	// if (inputHoverProviderDisposable) {
+	// 	inputHoverProviderDisposable.dispose();
+	// 	inputHoverProviderDisposable = undefined;
+	// }
 	if (inputDocumentLinkDisposable) {
 		inputDocumentLinkDisposable.dispose();
 		inputDocumentLinkDisposable = undefined;
@@ -75,15 +77,6 @@ function applyImportEffectsIfLatex(document: vscode.TextDocument) {
 	if (document.languageId === "latex") {
 		applyImportHighlights(editor);
 
-		// if (!inputHoverProviderDisposable) {
-		// 	inputHoverProviderDisposable = vscode.languages.registerHoverProvider(
-		// 		{ language: "latex" },
-		// 		{
-		// 			provideHover: inputHoverProvider,
-		// 		}
-		// 	);
-		// }
-
 		if (!importDocumentLinkDisposable) {
 			importDocumentLinkDisposable = vscode.languages.registerDocumentLinkProvider(
 				{ language: "latex" },
@@ -92,9 +85,9 @@ function applyImportEffectsIfLatex(document: vscode.TextDocument) {
 				}
 			);
 		}
-		// if (!openTexFileInTabDisposable) {
-		// 	openTexFileInTabDisposable = vscode.commands.registerCommand("openTexFileInTab", (arg) => openTexFileInTab(arg));
-		// }
+		if (!openInExternalGraphicsEditorDisposable) {
+			openInExternalGraphicsEditorDisposable = vscode.commands.registerCommand("openInExternalGraphicsEditor", (arg) => openInExternalGraphicsEditor(arg));
+		}
 	} else {
 		removeImportEffects();
 	}
@@ -105,18 +98,14 @@ function removeImportEffects() {
 	if (editor) {
 		removeImportHighlights(editor);
 	}
-	// if (inputHoverProviderDisposable) {
-	// 	inputHoverProviderDisposable.dispose();
-	// 	inputHoverProviderDisposable = undefined;
-	// }
 	if (importDocumentLinkDisposable) {
 		importDocumentLinkDisposable.dispose();
 		importDocumentLinkDisposable = undefined;
 	}
-	// if (openTexFileInTabDisposable) {
-	// 	openTexFileInTabDisposable.dispose();
-	// 	openTexFileInTabDisposable = undefined;
-	// }
+	if (openInExternalGraphicsEditorDisposable) {
+		openInExternalGraphicsEditorDisposable.dispose();
+		openInExternalGraphicsEditorDisposable = undefined;
+	}
 	console.log("Removed all import effects.");
 }
 
@@ -315,6 +304,7 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage("Hello World! Welcome to LaTeX Helper!");
 		})
 	);
+	
 	inputTextActivation(context);
 	importTextActivation(context);
 	figureActivation(context);

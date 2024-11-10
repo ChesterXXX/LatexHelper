@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { createFile, getFullPath, openFile } from "../utils/fileUtils";
+import { createFile, getFullPath, openFileInTab } from "../utils/fileUtils";
 
 export function openTexFileInTab(arg: any) {
 	const fileName = arg["fileName"];
@@ -20,5 +20,5 @@ export function openTexFileInTab(arg: any) {
 		return;
 	}
 
-	openFile(fullPath);
+	openFileInTab(fullPath);
 }

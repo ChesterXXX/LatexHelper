@@ -12,7 +12,7 @@ function setInputDecoration() {
 	inputDecoration = vscode.window.createTextEditorDecorationType({
 		color: color,
 		fontStyle: "italic",
-		textDecoration: "underline",
+		// textDecoration: "underline",
 	});
 }
 

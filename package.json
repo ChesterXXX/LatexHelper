@@ -45,6 +45,21 @@
 						"type": "string",
 						"default": "DarkRed",
 						"description": "Color to highlight the filename inside \\import{dir}{filename}."
+					},
+					"latex-helper.importPdfTexTextHighlightColor": {
+						"type": "string",
+						"default": "Crimson",
+						"description": "Color to highlight the extension inside \\import{dir}{filename.pdf_tex}."
+					},
+					"latex-helper.svgWidth": {
+						"type": "number",
+						"default": 160,
+						"description": "Default width of the SVG canvas."
+					},
+					"latex-helper.svgHeight": {
+						"type": "number",
+						"default": 80,
+						"description": "Default height of the SVG canvas."
 					}
 				}
 			}
