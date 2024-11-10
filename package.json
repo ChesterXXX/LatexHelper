@@ -51,10 +51,20 @@
 						"default": "Crimson",
 						"description": "Color to highlight the extension inside \\import{dir}{filename.pdf_tex}."
 					},
+					"latex-helper.figureEnvironmentSnippet": {
+						"type": "string",
+						"default": "\\begin{figure}[h]\\n\\t\\def\\svgwidth{${1:#mul}\\columnwidth}\\n\\t\\import{#dir}{#filename.pdf_tex}\\n\\t\\label{fig:${2:#filename}}\\n\\t\\caption{${3:Some Figure}}\\n\\end{figure}",
+						"description": "The figure environment. #mul, #dir and #filename will be replaces in runtime. The ${n:} will define tabstops in the snippet."
+					},
 					"latex-helper.inkscapeExecutableLocation": {
 						"type": "string",
 						"default": "C:\\src\\InkScape\\bin\\inkscape.exe",
-						"description": "Default location of InkScape executable."
+						"description": "Location of InkScape executable."
+					},
+					"latex-helper.inkscapeExportCommand": {
+						"type": "string",
+						"default": "\"#executable\" -D --export-latex --export-dpi 300 --export-filename=\"#pdf\" \"#svg\"",
+						"description": "The command for compiling SVG to pdf_tex. #executable, #pdf, #svg will be replaced in the runtime."
 					},
 					"latex-helper.svgWidth": {
 						"type": "number",
