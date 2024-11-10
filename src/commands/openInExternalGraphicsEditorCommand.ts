@@ -3,6 +3,7 @@ import { createFile, createSVGFile, getFullPath, openFileInTab } from "../utils/
 import path from "path";
 import { setupSVGWatcher } from "../utils/fileWatchers";
 import { openInInkscape } from "../utils/inkscapeUtils";
+import { addCachedFiles } from "../utils/cacheUtils";
 
 export function openInExternalGraphicsEditor(arg: any) {
 	const directory = arg["directory"];
@@ -33,6 +34,8 @@ export function openInExternalGraphicsEditor(arg: any) {
 	if (!createSVGFile(imageFullPath)) {
 		return;
 	}
+
+	addCachedFiles(imageFullPath);
 
 	setupSVGWatcher(imageFullPath);
 

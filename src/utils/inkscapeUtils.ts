@@ -7,7 +7,7 @@ let inkscapeExportCommand: string;
 function setInkscapeLocation() {
     const config = vscode.workspace.getConfiguration("latex-helper");
 	inkscapeLocation = config.get<string>("inkscapeExecutableLocation", "C:\\src\\InkScape\\bin\\inkscape.exe");
-	inkscapeExportCommand = config.get<string>("inkscapeExecutableLocation", "\"#executable\" -D --export-latex --export-dpi 300 --export-filename=\"#pdf\" \"#svg\"");
+	inkscapeExportCommand = config.get<string>("inkscapeExportCommand", "\"#executable\" -D --export-latex --export-dpi 300 --export-filename=\"#pdf\" \"#svg\"");
 }
 
 export function openInInkscape(imageFullPath: string) {
@@ -33,7 +33,6 @@ export function exportPdfTex(imageFullPath:string) {
 
 	setInkscapeLocation();
 
-    // const exportCommand = `"${inkscapeLocation}" -D --export-latex --export-filename="${pdfFullPath}" "${svgFullPath}"`;
 	const exportCommand = inkscapeExportCommand.replaceAll("#executable", inkscapeLocation).replaceAll("#pdf", pdfFullPath).replaceAll("#svg", svgFullPath);
 
     console.log(`Exporting to pdf_tex : ${exportCommand}`);
