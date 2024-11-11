@@ -1,15 +1,22 @@
 # LaTeX Helper
 
-A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhance the LaTeX editing experience. Principal motivation is from the amazing [Gilles Castel](https://castel.dev/). I don't claim any originality here, as most of these features are already implemented by other (better written) extensions. In particular, for more robust support (e.g, support for typst), look at the extension [Super Figure](https://marketplace.visualstudio.com/items?itemName=peterson.super-figure).
+A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhance the LaTeX editing experience. The principal inspiration comes from the work of [Gilles Castel](https://castel.dev/). I don't claim any originality here, as most of these features are already implemented by other, more robust extensions.
 
 ## Features
 
+#### Highlighting
 -   Highlights `\input{filename}` within LaTeX documents.
--   On click of `filename` in `\input{filenam}`, auto-creates new `filename.tex` file or opens existing ones.
 -   Highlights the directory and filename inside `\import{dir}{filename}`.
--   Provides a snippet that generates LaTeX figure environment :
-    -   The snippet is activated on `@` and is triggered on space or newline.
-    -   Pressing `SPACEBAR`, `TAB` or `ENTER` after typing `@fig/test_fig` will generate the following code, which is customizable.
+-   For `\import{dir}{figname.pdf_tex}`, the three parts `dir`, `figname`, and `.pdf_tex` are highlighted separately.
+-   All highlight colors can be customized.
+
+#### Creating `.tex` Files and Opening Them in Tabs
+-   Clicking `filename` in `\input{filename}` will auto-create a new `filename.tex` file if it doesn't already exist, then opens it in a new tab or switches to an existing tab if it's already open.
+
+#### Figure Snippet
+-   Provides a snippet that generates a LaTeX figure environment:
+    -   The snippet is activated by typing `@` (customizable), and is triggered on space or a new line.
+    -   Pressing `SPACEBAR`, `TAB`, or `ENTER` after typing `@fig/test_fig` will generate the following code:
         ```
         \begin{figure}[h]
             \def\svgwidth{0.5\columnwidth}
@@ -18,29 +25,31 @@ A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhanc
             \caption{Test Figure}
         \end{figure}
         ```
-    -   There will be tabstops to edit `label` and `caption`.
--   On click of `filename` in `\import{dir}{test_fig.pdf_tex}` opens the SVG file `dir/test_fig.svg` in [InkScape](https://inkscape.org/). The file is created if necessary.
--   Changing the file `dir/test_fig.svg` automatically calls the `pdf-export` option in InkScape, and two new files ``dir/test_fig.pdf` and `dir/test_fig.pdf_tex` are created.
--   [TODO] Recomplie Latex document on `dir/test_fig.pdf_tex` change.
+    -   Tabstops are provided to edit the values in `\svgwidth`, `\label`, and `\caption`.
+    -   The figure code, including tabstops, can be customized.
+
+#### InkScape Support
+-   Clicking `figname` in `\import{dir}{figname.pdf_tex}` opens the SVG file `dir/figname.svg` via [InkScape](https://inkscape.org/). The `.svg` file is created if necessary, with a customizable template.
+-   When the file `dir/figname.svg` is modified, InkScape automatically exports to `dir/figname.pdf` and `dir/figname.pdf_tex`.
+-   If [LaTeX Workshop](vscode:extension/James-Yu.latex-workshop) is installed and active, then the LaTeX document is automatically compiled on any `dir/figname.pdf_tex` change, including first-time creation.
+-   This behavior is achieved by using the npm file watcher package [chokidar](https://www.npmjs.com/package/chokidar) and is inspired by the extension [Super Figure](vscode:extension/peterson.super-figure), which has more robust support (e.g., support for Typst and GIMP).
 
 ## Configuration
 
 You can customize the following settings in your `settings.json`:
 
-### Highlight Colors
+#### Highlight Colors
 
--   **Color to highlight the text inside `\input{}`**:
+-   **Color to highlight text inside `\input{}`**:
     ```json
     "latex-helper.inputTextHighlightColor": "DodgerBlue"
     ```
 -   **Color to highlight the directory inside `\import{dir}{filename}`**:
-
     ```json
     "latex-helper.importDirectoryTextHighlightColor": "DarkGreen"
     ```
 
 -   **Color to highlight the filename inside `\import{dir}{filename}`**:
-
     ```json
     "latex-helper.importFilenameTextHighlightColor": "DarkRed"
     ```
@@ -50,21 +59,20 @@ You can customize the following settings in your `settings.json`:
     "latex-helper.importPdfTexTextHighlightColor": "Crimson"
     ```
 
-### LaTeX Figure Environment Snippet
+#### LaTeX Figure Environment Snippet
 
 Customize the figure environment snippet with placeholders:
 
--   `#mul` for multiplier of width
+-   `#mul` for width multiplier
 -   `#dir` for directory
 -   `#filename` for filename
     ```json
     "latex-helper.figureEnvironmentSnippet": "\\begin{figure}[h]\\n\\t\\def\\svgwidth{${1:#mul}\\columnwidth}\\n\\t\\import{#dir}{#filename.pdf_tex}\\n\\t\\label{fig:${2:#filename}}\\n\\t\\caption{${3:Some Figure}}\\n\\end{figure}"
     ```
 
-### InkScape Settings
+#### InkScape Settings
 
 -   **Location of the InkScape executable**:
-
     ```json
     "latex-helper.inkscapeExecutableLocation": "C:\\src\\InkScape\\bin\\inkscape.exe"
     ```
@@ -74,10 +82,9 @@ Customize the figure environment snippet with placeholders:
     "latex-helper.inkscapeExportCommand": "\"#executable\" -D --export-latex --export-dpi 300 --export-filename=\"#pdf\" \"#svg\""
     ```
 
-### SVG Dimensions
+#### SVG Template Settings:
 
 -   **Default width of the SVG canvas**:
-
     ```json
     "latex-helper.svgWidth": 160
     ```

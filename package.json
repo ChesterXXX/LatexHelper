@@ -4,6 +4,7 @@
 	"description": "Adds some utilities for writing in LaTeX. Primarily aimed at math articles.",
 	"publisher": "Aritra Bhowmick",
 	"author": "Aritra Bhowmick",
+	"icon": "assets/icon.png",
 	"license": "MIT",
 	"version": "0.0.1",
 	"repository": {
