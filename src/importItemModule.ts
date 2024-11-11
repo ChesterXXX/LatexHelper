@@ -3,17 +3,18 @@ import { applyImportHighlights, removeImportHighlights } from "./decorations/imp
 import { importDocumentLinksProvider } from "./links/importDocumentLinks";
 import { openInExternalGraphicsEditor } from "./commands/openInExternalGraphicsEditorCommand";
 import { logMessage } from "./extension";
+import { hasLatexFileOpen } from "./utils/fileUtils";
 
 let importDocumentLinkDisposable: vscode.Disposable | undefined;
 let openInExternalGraphicsEditorDisposable: vscode.Disposable | undefined;
-
 
 function applyImportEffectsIfLatex(document: vscode.TextDocument) {
 	const editor = vscode.window.activeTextEditor;
 	if (!editor || !document) {
 		return;
 	}
-	if (document.languageId === "latex") {
+
+	if (hasLatexFileOpen()) {
 		applyImportHighlights(editor);
 
 		if (!importDocumentLinkDisposable) {
@@ -47,12 +48,17 @@ export function importTextActivate(context: vscode.ExtensionContext) {
 			}
 		}),
 		vscode.window.onDidChangeActiveTextEditor((editor) => {
-			if (editor && editor.document.languageId === "latex") {
+			if (editor) {
 				applyImportEffectsIfLatex(editor.document);
-			} else if (editor) {
-				removeImportHighlights(editor);
 			}
 		})
+		// vscode.window.onDidChangeActiveTextEditor((editor) => {
+		// 	if (editor && editor.document.languageId === "latex") {
+		// 		applyImportEffectsIfLatex(editor.document);
+		// 	} else if (editor) {
+		// 		removeImportHighlights(editor);
+		// 	}
+		// })
 	);
 
 	vscode.window.onDidChangeActiveTextEditor((editor) => {
@@ -65,16 +71,18 @@ export function importTextActivate(context: vscode.ExtensionContext) {
 
 export function importTextDeactivate() {
 	const editor = vscode.window.activeTextEditor;
-	if (editor) {
-		removeImportHighlights(editor);
+	if (!hasLatexFileOpen()) {
+		if (editor) {
+			removeImportHighlights(editor);
+		}
+		if (importDocumentLinkDisposable) {
+			importDocumentLinkDisposable.dispose();
+			importDocumentLinkDisposable = undefined;
+		}
+		if (openInExternalGraphicsEditorDisposable) {
+			openInExternalGraphicsEditorDisposable.dispose();
+			openInExternalGraphicsEditorDisposable = undefined;
+		}
+		logMessage("Removed all import effects.");
 	}
-	if (importDocumentLinkDisposable) {
-		importDocumentLinkDisposable.dispose();
-		importDocumentLinkDisposable = undefined;
-	}
-	if (openInExternalGraphicsEditorDisposable) {
-		openInExternalGraphicsEditorDisposable.dispose();
-		openInExternalGraphicsEditorDisposable = undefined;
-	}
-	logMessage("Removed all import effects.");
 }

@@ -3,20 +3,18 @@ import { applyInputHighlights, removeInputHighlights } from "./decorations/input
 import { inputDocumentLinksProvider } from "./links/inputDocumentLinks";
 import { openTexFileInTab } from "./commands/openTexFileCommand";
 import { logMessage } from "./extension";
-// import { inputHoverProvider } from "./decorations/inputHoverProvider";
+import { hasLatexFileOpen } from "./utils/fileUtils";
 
-
-// let inputHoverProviderDisposable: vscode.Disposable | undefined;
 let inputDocumentLinkDisposable: vscode.Disposable | undefined;
 let openTexFileInTabDisposable: vscode.Disposable | undefined;
-
 
 function applyInputEffectsIfLatex(document: vscode.TextDocument) {
 	const editor = vscode.window.activeTextEditor;
 	if (!editor || !document) {
 		return;
 	}
-	if (document.languageId === "latex") {
+
+	if (hasLatexFileOpen()) {
 		applyInputHighlights(editor);
 
 		if (!inputDocumentLinkDisposable) {
@@ -36,21 +34,22 @@ function applyInputEffectsIfLatex(document: vscode.TextDocument) {
 }
 
 export function inputTextDeactivate() {
-	const editor = vscode.window.activeTextEditor;
-	if (editor) {
-		removeInputHighlights(editor);
+	if (!hasLatexFileOpen()) {
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
+			removeInputHighlights(editor);
+		}
+		if (inputDocumentLinkDisposable) {
+			inputDocumentLinkDisposable.dispose();
+			inputDocumentLinkDisposable = undefined;
+		}
+		if (openTexFileInTabDisposable) {
+			openTexFileInTabDisposable.dispose();
+			openTexFileInTabDisposable = undefined;
+		}
+		logMessage("Removed all input effects.");
 	}
-	if (inputDocumentLinkDisposable) {
-		inputDocumentLinkDisposable.dispose();
-		inputDocumentLinkDisposable = undefined;
-	}
-	if (openTexFileInTabDisposable) {
-		openTexFileInTabDisposable.dispose();
-		openTexFileInTabDisposable = undefined;
-	}
-	logMessage("Removed all input effects.");
 }
-
 
 export function inputTextActivate(context: vscode.ExtensionContext) {
 	const editor = vscode.window.activeTextEditor;
@@ -67,12 +66,17 @@ export function inputTextActivate(context: vscode.ExtensionContext) {
 			}
 		}),
 		vscode.window.onDidChangeActiveTextEditor((editor) => {
-			if (editor && editor.document.languageId === "latex") {
-				applyInputEffectsIfLatex(editor.document);
-			} else if (editor) {
-				removeInputHighlights(editor);
+			if (editor) {
+				applyInputEffectsIfLatex(editor?.document);
 			}
 		})
+		// vscode.window.onDidChangeActiveTextEditor((editor) => {
+		// 	if (editor && editor.document.languageId === "latex") {
+		// 		applyInputEffectsIfLatex(editor.document);
+		// 	} else if (editor) {
+		// 		removeInputHighlights(editor);
+		// 	}
+		// })
 	);
 
 	vscode.window.onDidChangeActiveTextEditor((editor) => {

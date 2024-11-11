@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import { addPdfTexToWatchlist, addSvgToWatchlist, removePdfTexFromWatchlist, removeSvgFromWatchlist } from "./fileWatchers";
+import { logMessage } from "../extension";
 
 const cacheFileName = "latex-helper.json";
 
@@ -10,30 +11,50 @@ function isWorkspaceAvailable(): boolean {
 }
 
 function getCacheFilePath(): string {
-	return path.join(process.cwd(), cacheFileName);
+	let filePath: string;
+
+	if (isWorkspaceAvailable()) {
+		const workspaceFolder = vscode.workspace.workspaceFolders![0].uri.fsPath;
+		const vscodeFolderPath = path.join(workspaceFolder, ".vscode");
+		filePath = path.join(vscodeFolderPath, cacheFileName);
+
+		if (!fs.existsSync(vscodeFolderPath)) {
+			fs.mkdirSync(vscodeFolderPath, { recursive: true });
+		}
+	} else {
+		filePath = `${process.cwd()}/${cacheFileName}`;
+	}
+
+	if (!fs.existsSync(filePath)) {
+		fs.writeFileSync(filePath, "[]", "utf-8");
+		logMessage(`Created empty cache file: ${filePath}`);
+	}
+
+	return filePath;
 }
 
-export function getCachedFiles(): string[] {
-	if (isWorkspaceAvailable()) {
-		const workspaceConfig = vscode.workspace.getConfiguration();
-		return workspaceConfig.get<string[]>("latex-helper", []);
-	} else {
-		const cachePath = getCacheFilePath();
-		if (!fs.existsSync(cachePath)) {
-			saveCachedFiles([]);
-		}
-		try {
-			const cache = fs.readFileSync(cachePath, "utf-8");
-			return JSON.parse(cache);
-		} catch (err) {
-			vscode.window.showErrorMessage(`Error reading watchlist from cache: ${err}`);
+function getFileWatchlist(): string[] {
+	const filePath = getCacheFilePath();
+	const fileData = fs.readFileSync(filePath, "utf-8");
+
+	try {
+		const watchlist = JSON.parse(fileData);
+		if (Array.isArray(watchlist)) {
+			return watchlist;
+		} else {
+			vscode.window.showWarningMessage("The cached data is not valid.");
 			return [];
 		}
+	} catch (error) {
+		vscode.window.showErrorMessage(`Error parsing JSON from cache file: ${error}`);
+		return [];
 	}
 }
 
 export function watchCachedFiles() {
-	const cachedFiles = getCachedFiles();
+	const cachedFiles = getFileWatchlist();
+
+	logMessage(`Cached watchlist:\n${cachedFiles}`);
 
 	cachedFiles.forEach((imageFullPath) => {
 		const svgFilePath = `${imageFullPath}.svg`;
@@ -64,7 +85,7 @@ export function watchCachedFiles() {
 }
 
 export function addCachedFiles(filename: string) {
-	const cachedFiles = getCachedFiles();
+	const cachedFiles = getFileWatchlist();
 	if (!cachedFiles.includes(filename)) {
 		cachedFiles.push(filename);
 		saveCachedFiles(cachedFiles);
@@ -72,22 +93,18 @@ export function addCachedFiles(filename: string) {
 }
 
 export function removeCachedFiles(filename: string) {
-	const cachedFiles = getCachedFiles();
+	const cachedFiles = getFileWatchlist();
 	const updatedCache = cachedFiles.filter((file) => file !== filename);
 	saveCachedFiles(updatedCache);
 }
 
-function saveCachedFiles(files: string[]) {
+function saveCachedFiles(files: string[]): void {
+	const cachePath = getCacheFilePath();
 	try {
-		if (isWorkspaceAvailable()) {
-			const workspaceConfig = vscode.workspace.getConfiguration();
-			workspaceConfig.update("latex-helper", files, vscode.ConfigurationTarget.Workspace);
-		} else {
-			const cachePath = getCacheFilePath();
-			fs.mkdirSync(path.dirname(cachePath), { recursive: true });
-			fs.writeFileSync(cachePath, JSON.stringify(files, null, 2), "utf-8");
-		}
-	} catch (err) {
-		vscode.window.showErrorMessage(`Error writing watchlist to cache: ${err}`);
+		const jsonData = JSON.stringify(files, null, 2);
+		fs.writeFileSync(cachePath, jsonData, "utf-8");
+		logMessage("Saved files to watch in cache.");
+	} catch (error) {
+		vscode.window.showErrorMessage(`Error saving cached files: ${error}`);
 	}
 }

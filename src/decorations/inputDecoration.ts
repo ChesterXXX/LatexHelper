@@ -4,7 +4,7 @@ import { logMessage } from "../extension";
 
 let inputDecoration: vscode.TextEditorDecorationType | undefined;
 
-function setInputDecoration() {
+function createInputDecorationFromConfig() {
 	const config = vscode.workspace.getConfiguration("latex-helper");
 	const color = config.get("inputTextHighlightColor", "DodgerBlue");
 	if (inputDecoration) {
@@ -13,7 +13,6 @@ function setInputDecoration() {
 	inputDecoration = vscode.window.createTextEditorDecorationType({
 		color: color,
 		fontStyle: "italic",
-		// textDecoration: "underline",
 	});
 }
 
@@ -34,19 +33,19 @@ export function applyInputHighlights(editor: vscode.TextEditor) {
 	const document = editor.document;
 
 	const decorations = getInputDecorationRanges(document);
-	setInputDecoration();
+	createInputDecorationFromConfig();
 	if (decorations.length > 0 && inputDecoration) {
 		editor.setDecorations(inputDecoration, decorations);
 	}
 }
 
 export function removeInputHighlights(editor: vscode.TextEditor) {
-	logMessage("Removed all input decorations.");
-	setInputDecoration();
+	createInputDecorationFromConfig();
 	if (inputDecoration) {
 		editor.setDecorations(inputDecoration, []);
 		inputDecoration.dispose();
 		inputDecoration = undefined;
 	}
+	logMessage("Removed all input decorations.");
 }
 

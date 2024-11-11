@@ -22,6 +22,17 @@ export function setupWatchers() {
 		});
 
 	pdftexWatcher
+		.on("add", (pdftexFilePath) => {
+			logMessage(`pdf_tex file added : ${pdftexFilePath}`);
+			vscode.commands.executeCommand("latex-workshop.build").then(
+				() => {
+					logMessage("LaTeX Workshop build command executed successfully.");
+				},
+				(error) => {
+					logMessage(`Error executing LaTeX Workshop build command: ${error}`);
+				}
+			);
+		})
 		.on("change", (pdftexFilePath) => {
 			logMessage(`pdf_tex file changed : ${pdftexFilePath}`);
 			vscode.commands.executeCommand("latex-workshop.build").then(
@@ -71,24 +82,26 @@ export function removeSvgFromWatchlist(imageFullPath: string) {
 	const svgFilePath = `${imageFullPath}.svg`;
 
 	for (const [dir, files] of Object.entries(svgWatcher.getWatched())) {
-		if (files.every((file) => path.join(dir, file) !== svgFilePath)) {
-			logMessage(`SVG file was not being watched already: ${svgFilePath}`);
+		if (files.some((file) => path.join(dir, file) === svgFilePath)) {
+			svgWatcher.unwatch(svgFilePath);
+			logMessage(`Stopped watching SVG file: ${svgFilePath}`);
 			return;
 		}
 	}
-	svgWatcher.unwatch(svgFilePath);
-	logMessage(`Stopped watching SVG file: ${svgFilePath}`);
+	logMessage(`SVG file is not being watched: ${svgFilePath}`);
 }
 
 export function removePdfTexFromWatchlist(imageFullPath: string) {
 	const pdftexFilePath = `${imageFullPath}.pdf_tex`;
 
+	const conent = pdftexWatcher.getWatched();
+
 	for (const [dir, files] of Object.entries(pdftexWatcher.getWatched())) {
-		if (files.every((file) => path.join(dir, file) !== pdftexFilePath)) {
-			logMessage(`pdf_tex file was not being watched already: ${pdftexFilePath}`);
+		if (files.some((file) => path.join(dir, file) === pdftexFilePath)) {
+			pdftexWatcher.unwatch(pdftexFilePath);
+			logMessage(`Stopped watching pdf_tex file: ${pdftexFilePath}`);
 			return;
 		}
 	}
-	pdftexWatcher.unwatch(pdftexFilePath);
-	logMessage(`Stopped watching pdf_tex file: ${pdftexFilePath}`);
+	logMessage(`pdf_tex file is not being watched: ${pdftexFilePath}`);
 }

@@ -96,3 +96,11 @@ function findOpenedEditor(fullPath: string): vscode.TextEditor | undefined {
 	const openedEditors = vscode.window.visibleTextEditors;
 	return openedEditors.find((editor) => editor.document.uri.fsPath === fullPath);
 }
+
+export function hasLatexFileOpen() {
+	return vscode.window.visibleTextEditors.some((editor) => {
+		const fileName = editor.document.uri.fsPath;
+		return fileName.endsWith(".tex");
+	});
+}
+

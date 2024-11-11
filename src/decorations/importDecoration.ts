@@ -6,7 +6,7 @@ let importDirectoryDecoration: vscode.TextEditorDecorationType | undefined;
 let importFilenameDecoration: vscode.TextEditorDecorationType | undefined;
 let importPdfTexExtensionDecoration: vscode.TextEditorDecorationType | undefined;
 
-function setImportDecorations() {
+function createImportDecorationsFromConfig() {
 	const config = vscode.workspace.getConfiguration("latex-helper");
 	const directoryColor = config.get("importDirectoryTextHighlightColor", "DarkGreen");
 	const filenameColor = config.get("importFilenameTextHighlightColor", "DarkRed");
@@ -17,7 +17,6 @@ function setImportDecorations() {
 	importDirectoryDecoration = vscode.window.createTextEditorDecorationType({
 		color: directoryColor,
 		fontStyle: "italic",
-		// textDecoration: "underline",
 	});
 
 	if (importFilenameDecoration) {
@@ -26,7 +25,6 @@ function setImportDecorations() {
 	importFilenameDecoration = vscode.window.createTextEditorDecorationType({
 		color: filenameColor,
 		fontStyle: "italic",
-		// textDecoration: "underline",
 	});
 
 	if (importPdfTexExtensionDecoration){
@@ -35,7 +33,6 @@ function setImportDecorations() {
 	importPdfTexExtensionDecoration = vscode.window.createTextEditorDecorationType({
 		color: extensionColor,
 		fontStyle: "italic",
-		// textDecoration: "underline",
 	});
 }
 
@@ -69,7 +66,7 @@ export function applyImportHighlights(editor: vscode.TextEditor) {
 	const document = editor.document;
 
 	const decorations = getImportDecorationRanges(document);
-	setImportDecorations();
+	createImportDecorationsFromConfig();
 	if (decorations.directoryDecorations.length > 0 && importDirectoryDecoration) {
 		editor.setDecorations(importDirectoryDecoration, decorations.directoryDecorations);
 	}
@@ -82,8 +79,7 @@ export function applyImportHighlights(editor: vscode.TextEditor) {
 }
 
 export function removeImportHighlights(editor: vscode.TextEditor) {
-	logMessage("Removed all import decorations.");
-	setImportDecorations();
+	createImportDecorationsFromConfig();
 	if (importDirectoryDecoration) {
 		editor.setDecorations(importDirectoryDecoration, []);
 		importDirectoryDecoration.dispose();
@@ -99,4 +95,5 @@ export function removeImportHighlights(editor: vscode.TextEditor) {
 		importPdfTexExtensionDecoration.dispose();
 		importPdfTexExtensionDecoration = undefined;
 	}
+	logMessage("Removed all import decorations.");
 }
