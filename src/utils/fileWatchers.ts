@@ -3,72 +3,92 @@ import * as vscode from "vscode";
 import { logMessage } from "../extension";
 import { watchCachedFiles } from "./cacheUtils";
 import { exportPdfTex } from "./inkscapeUtils";
+import path from "path";
 
-export const svgWatchers: chokidar.FSWatcher[] = [];
-export const pdfTexWatchers: chokidar.FSWatcher[] = [];
+const svgWatcher: chokidar.FSWatcher = chokidar.watch([], { persistent: true });
+const pdftexWatcher: chokidar.FSWatcher = chokidar.watch([], { persistent: true });
 
-export function setupSVGWatcher(imageFullPath: string) {
+export function setupWatchers() {
+	svgWatcher
+		.on("change", (svgFilePath) => {
+			logMessage(`SVG file changed : ${svgFilePath}`);
+			const imageFullPath = svgFilePath.replace(/\.svg$/, "");
+			exportPdfTex(imageFullPath);
+			addPdfTexToWatchlist(imageFullPath);
+		})
+		.on("unlink", (svgFilePath) => {
+			logMessage(`SVG file deleted: ${svgFilePath}`);
+			watchCachedFiles();
+		});
+
+	pdftexWatcher
+		.on("change", (pdftexFilePath) => {
+			logMessage(`pdf_tex file changed : ${pdftexFilePath}`);
+			vscode.commands.executeCommand("latex-workshop.build").then(
+				() => {
+					logMessage("LaTeX Workshop build command executed successfully.");
+				},
+				(error) => {
+					logMessage(`Error executing LaTeX Workshop build command: ${error}`);
+				}
+			);
+		})
+		.on("unlink", (pdftexFilePath) => {
+			logMessage(`pdf_tex file deleted: ${pdftexFilePath}`);
+			watchCachedFiles();
+		});
+}
+
+export function addSvgToWatchlist(imageFullPath: string) {
 	const svgFilePath: string = `${imageFullPath}.svg`;
 
-	const isAlreadyWatched = svgWatchers.some((watcher) => {
-		return watcher.getWatched()[svgFilePath] !== undefined;
-	});
-
-	if (!isAlreadyWatched) {
-		const svgWatcher = chokidar.watch(svgFilePath, { persistent: true });
-		svgWatchers.push(svgWatcher);
-
-		svgWatcher
-			.on("change", () => {
-				logMessage(`SVG file changed : ${svgFilePath}`);
-				exportPdfTex(imageFullPath);
-				setupPdfTexWatcher(imageFullPath);
-			})
-			.on("unlink", () => {
-				logMessage(`SVG file deleted: ${svgFilePath}`);
-				watchCachedFiles();
-			});
+	for (const [dir, files] of Object.entries(svgWatcher.getWatched())) {
+		if (files.some((file) => path.join(dir, file) === svgFilePath)) {
+			logMessage(`SVG file is already being watched: ${svgFilePath}`);
+			return;
+		}
 	}
+
+	svgWatcher.add(svgFilePath);
+	logMessage(`Started watching SVG file: ${svgFilePath}`);
 }
 
-export function setupPdfTexWatcher(imageFullPath: string) {
+export function addPdfTexToWatchlist(imageFullPath: string) {
 	const pdftexFilePath = `${imageFullPath}.pdf_tex`;
 
-	const isAlreadyWatched = pdfTexWatchers.some((watcher) => {
-		return watcher.getWatched()[pdftexFilePath] !== undefined;
-	});
-
-	if (!isAlreadyWatched) {
-		const pdfTexWatcher = chokidar.watch(pdftexFilePath, { persistent: true });
-		pdfTexWatchers.push(pdfTexWatcher);
-
-		pdfTexWatcher
-			.on("change", () => {
-				logMessage(`pdf_tex file changed : ${pdftexFilePath}`);
-				vscode.commands.executeCommand("latex-workshop.build")
-				.then(
-					() => {
-						logMessage("LaTeX Workshop build command executed successfully.");
-					},
-					(error) => {
-						logMessage(`Error executing LaTeX Workshop build command: ${error}`);
-					}
-				);
-			})
-			.on("unlink", () => {
-				logMessage(`pdf_tex file deleted: ${pdftexFilePath}`);
-				watchCachedFiles();
-			});
+	for (const [dir, files] of Object.entries(pdftexWatcher.getWatched())) {
+		if (files.some((file) => path.join(dir, file) === pdftexFilePath)) {
+			logMessage(`pdf_tex file is already being watched: ${pdftexFilePath}`);
+			return;
+		}
 	}
+
+	pdftexWatcher.add(pdftexFilePath);
+	logMessage(`Started watching pdf_tex file: ${pdftexFilePath}`);
 }
 
-export function removeWatcher(watcherArray: chokidar.FSWatcher[], filePath: string) {
-	const watcherIndex = watcherArray.findIndex((watcher) => {
-		return watcher.getWatched()[filePath] !== undefined;
-	});
+export function removeSvgFromWatchlist(imageFullPath: string) {
+	const svgFilePath = `${imageFullPath}.svg`;
 
-	if (watcherIndex !== -1) {
-		watcherArray[watcherIndex].close();
-		watcherArray.splice(watcherIndex, 1);
+	for (const [dir, files] of Object.entries(svgWatcher.getWatched())) {
+		if (files.every((file) => path.join(dir, file) !== svgFilePath)) {
+			logMessage(`SVG file was not being watched already: ${svgFilePath}`);
+			return;
+		}
 	}
+	svgWatcher.unwatch(svgFilePath);
+	logMessage(`Stopped watching SVG file: ${svgFilePath}`);
+}
+
+export function removePdfTexFromWatchlist(imageFullPath: string) {
+	const pdftexFilePath = `${imageFullPath}.pdf_tex`;
+
+	for (const [dir, files] of Object.entries(pdftexWatcher.getWatched())) {
+		if (files.every((file) => path.join(dir, file) !== pdftexFilePath)) {
+			logMessage(`pdf_tex file was not being watched already: ${pdftexFilePath}`);
+			return;
+		}
+	}
+	pdftexWatcher.unwatch(pdftexFilePath);
+	logMessage(`Stopped watching pdf_tex file: ${pdftexFilePath}`);
 }

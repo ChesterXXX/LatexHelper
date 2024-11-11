@@ -3,6 +3,7 @@ import { inputTextActivate, inputTextDeactivate } from "./inputItemModule";
 import { importTextActivate, importTextDeactivate } from "./importItemModule";
 import { figureActivation } from "./figureModule";
 import { watchCachedFiles } from "./utils/cacheUtils";
+import { setupWatchers } from "./utils/fileWatchers";
 
 const outputChannel = vscode.window.createOutputChannel("LaTeX Helper");
 
@@ -24,6 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 	figureActivation(context);
 	inputTextActivate(context);
 	importTextActivate(context);
+	setupWatchers();
 	watchCachedFiles();
 }
 

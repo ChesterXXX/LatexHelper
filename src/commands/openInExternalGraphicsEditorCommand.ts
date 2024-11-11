@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { createFile, createSVGFile, getFullPath, openFileInTab } from "../utils/fileUtils";
 import path from "path";
-import { setupSVGWatcher } from "../utils/fileWatchers";
+import { addSvgToWatchlist } from "../utils/fileWatchers";
 import { openInInkscape } from "../utils/inkscapeUtils";
 import { addCachedFiles } from "../utils/cacheUtils";
 
@@ -37,7 +37,7 @@ export function openInExternalGraphicsEditor(arg: any) {
 
 	addCachedFiles(imageFullPath);
 
-	setupSVGWatcher(imageFullPath);
+	addSvgToWatchlist(imageFullPath);
 
 	openInInkscape(imageFullPath);
 }

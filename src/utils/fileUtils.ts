@@ -26,10 +26,11 @@ function getWorkspaceFolder() {
 }
 
 function getSVGTemplate(){
-    const config = vscode.workspace.getConfiguration('latex-helper');
+	const config = vscode.workspace.getConfiguration('latex-helper');
     const width = config.get<number>('svgWidth', 160);
     const height = config.get<number>('svgHeight', 80);
-
+	
+	// <svg width="160" height="80" viewBox="0 0 160 80" />
     const svgTemplate = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" />`;
 
     return svgTemplate;
@@ -56,7 +57,7 @@ export function createFile(fullPath: string): boolean {
 }
 
 export function createSVGFile(imageFullPath: string): boolean {
-	// <svg width="160" height="80" viewBox="0 0 160 80" />
+	
 	const svgFullPath = `${imageFullPath}.svg`;
 	try {
 		if (fs.existsSync(svgFullPath)) {

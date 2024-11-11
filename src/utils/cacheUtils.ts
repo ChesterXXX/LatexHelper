@@ -1,8 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { pdfTexWatchers, removeWatcher, setupPdfTexWatcher, setupSVGWatcher, svgWatchers } from "./fileWatchers";
-import chokidar from "chokidar";
+import { addPdfTexToWatchlist, addSvgToWatchlist, removePdfTexFromWatchlist, removeSvgFromWatchlist } from "./fileWatchers";
 
 const cacheFileName = "latex-helper.json";
 
@@ -27,48 +26,39 @@ export function getCachedFiles(): string[] {
 			const cache = fs.readFileSync(cachePath, "utf-8");
 			return JSON.parse(cache);
 		} catch (err) {
-			console.error("Error reading cache:", err);
+			vscode.window.showErrorMessage(`Error reading watchlist from cache: ${err}`);
 			return [];
 		}
 	}
 }
 
-export function checkIfCachedFileExists(filename: string): boolean {
-	return fs.existsSync(filename);
-}
-
-export function removeCachedFiles(filename: string) {
-	const cachedFiles = getCachedFiles();
-	const updatedCache = cachedFiles.filter((file) => file !== filename);
-	saveCachedFiles(updatedCache);
-}
-
 export function watchCachedFiles() {
 	const cachedFiles = getCachedFiles();
 
-	cachedFiles.forEach((file) => {
-		const svgFilePath = `${file}.svg`;
-		const pdftexFilePath = `${file}.pdf_tex`;
+	cachedFiles.forEach((imageFullPath) => {
+		const svgFilePath = `${imageFullPath}.svg`;
+		const pdftexFilePath = `${imageFullPath}.pdf_tex`;
 		let svgFileExists = false;
 		let pdftexFileExists = false;
-		if (checkIfCachedFileExists(svgFilePath)) {
-			setupSVGWatcher(file);
+
+		if (fs.existsSync(svgFilePath)) {
+			addSvgToWatchlist(imageFullPath);
 			svgFileExists = true;
 		} else {
+			removeSvgFromWatchlist(imageFullPath);
 			svgFileExists = false;
-			removeWatcher(svgWatchers, svgFilePath);
 		}
 
-		if (checkIfCachedFileExists(pdftexFilePath)) {
-			setupPdfTexWatcher(file);
+		if (fs.existsSync(pdftexFilePath)) {
+			addPdfTexToWatchlist(imageFullPath);
 			pdftexFileExists = true;
 		} else {
+			removePdfTexFromWatchlist(imageFullPath);
 			pdftexFileExists = false;
-			removeWatcher(pdfTexWatchers, pdftexFilePath);
 		}
 
 		if (!svgFileExists && !pdftexFileExists) {
-			removeCachedFiles(file);
+			removeCachedFiles(imageFullPath);
 		}
 	});
 }
@@ -79,6 +69,12 @@ export function addCachedFiles(filename: string) {
 		cachedFiles.push(filename);
 		saveCachedFiles(cachedFiles);
 	}
+}
+
+export function removeCachedFiles(filename: string) {
+	const cachedFiles = getCachedFiles();
+	const updatedCache = cachedFiles.filter((file) => file !== filename);
+	saveCachedFiles(updatedCache);
 }
 
 function saveCachedFiles(files: string[]) {
@@ -92,6 +88,6 @@ function saveCachedFiles(files: string[]) {
 			fs.writeFileSync(cachePath, JSON.stringify(files, null, 2), "utf-8");
 		}
 	} catch (err) {
-		console.error("Error writing cache:", err);
+		vscode.window.showErrorMessage(`Error writing watchlist to cache: ${err}`);
 	}
 }
