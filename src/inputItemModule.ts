@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { applyInputHighlights, removeInputHighlights } from "./decorations/inputDecoration";
 import { inputDocumentLinksProvider } from "./links/inputDocumentLinks";
 import { openTexFileInTab } from "./commands/openTexFileCommand";
+import { logMessage } from "./extension";
 // import { inputHoverProvider } from "./decorations/inputHoverProvider";
 
 
@@ -17,15 +18,6 @@ function applyInputEffectsIfLatex(document: vscode.TextDocument) {
 	}
 	if (document.languageId === "latex") {
 		applyInputHighlights(editor);
-
-		// if (!inputHoverProviderDisposable) {
-		// 	inputHoverProviderDisposable = vscode.languages.registerHoverProvider(
-		// 		{ language: "latex" },
-		// 		{
-		// 			provideHover: inputHoverProvider,
-		// 		}
-		// 	);
-		// }
 
 		if (!inputDocumentLinkDisposable) {
 			inputDocumentLinkDisposable = vscode.languages.registerDocumentLinkProvider(
@@ -48,10 +40,6 @@ export function inputTextDeactivate() {
 	if (editor) {
 		removeInputHighlights(editor);
 	}
-	// if (inputHoverProviderDisposable) {
-	// 	inputHoverProviderDisposable.dispose();
-	// 	inputHoverProviderDisposable = undefined;
-	// }
 	if (inputDocumentLinkDisposable) {
 		inputDocumentLinkDisposable.dispose();
 		inputDocumentLinkDisposable = undefined;
@@ -60,7 +48,7 @@ export function inputTextDeactivate() {
 		openTexFileInTabDisposable.dispose();
 		openTexFileInTabDisposable = undefined;
 	}
-	console.log("Removed all input effects.");
+	logMessage("Removed all input effects.");
 }
 
 
@@ -74,7 +62,6 @@ export function inputTextActivate(context: vscode.ExtensionContext) {
 		vscode.workspace.onDidOpenTextDocument(applyInputEffectsIfLatex),
 		vscode.workspace.onDidCloseTextDocument(inputTextDeactivate),
 		vscode.workspace.onDidChangeTextDocument((event) => {
-			const editor = vscode.window.activeTextEditor;
 			if (editor && editor.document === event.document) {
 				applyInputEffectsIfLatex(editor.document);
 			}
@@ -93,5 +80,5 @@ export function inputTextActivate(context: vscode.ExtensionContext) {
 			applyInputEffectsIfLatex(editor.document);
 		}
 	});
-	console.log("Applied input effects.");
+	logMessage("Applied input effects.");
 }

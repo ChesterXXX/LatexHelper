@@ -1,7 +1,8 @@
-import * as vscode from "vscode";
 import * as chokidar from "chokidar";
-import { exportPdfTex } from "./inkscapeUtils";
+import * as vscode from "vscode";
+import { logMessage } from "../extension";
 import { watchCachedFiles } from "./cacheUtils";
+import { exportPdfTex } from "./inkscapeUtils";
 
 export const svgWatchers: chokidar.FSWatcher[] = [];
 export const pdfTexWatchers: chokidar.FSWatcher[] = [];
@@ -19,12 +20,12 @@ export function setupSVGWatcher(imageFullPath: string) {
 
 		svgWatcher
 			.on("change", () => {
-				console.log(`SVG file changed : ${svgFilePath}`);
+				logMessage(`SVG file changed : ${svgFilePath}`);
 				exportPdfTex(imageFullPath);
 				setupPdfTexWatcher(imageFullPath);
 			})
 			.on("unlink", () => {
-				console.log(`SVG file deleted: ${svgFilePath}`);
+				logMessage(`SVG file deleted: ${svgFilePath}`);
 				watchCachedFiles();
 			});
 	}
@@ -43,11 +44,19 @@ export function setupPdfTexWatcher(imageFullPath: string) {
 
 		pdfTexWatcher
 			.on("change", () => {
-				console.log(`pdf_tex file changed : ${pdftexFilePath}`);
-				vscode.window.showInformationMessage(`pdf_tex file has been updated : ${pdftexFilePath}`);
+				logMessage(`pdf_tex file changed : ${pdftexFilePath}`);
+				vscode.commands.executeCommand("latex-workshop.build")
+				.then(
+					() => {
+						logMessage("LaTeX Workshop build command executed successfully.");
+					},
+					(error) => {
+						logMessage(`Error executing LaTeX Workshop build command: ${error}`);
+					}
+				);
 			})
 			.on("unlink", () => {
-				console.log(`pdf_tex file deleted: ${pdftexFilePath}`);
+				logMessage(`pdf_tex file deleted: ${pdftexFilePath}`);
 				watchCachedFiles();
 			});
 	}

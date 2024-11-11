@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { getInputs } from "../utils/inputRanges";
+import { logMessage } from "../extension";
 
 let inputDecoration: vscode.TextEditorDecorationType | undefined;
 
@@ -40,7 +41,7 @@ export function applyInputHighlights(editor: vscode.TextEditor) {
 }
 
 export function removeInputHighlights(editor: vscode.TextEditor) {
-	console.log("Removed all input decorations.");
+	logMessage("Removed all input decorations.");
 	setInputDecoration();
 	if (inputDecoration) {
 		editor.setDecorations(inputDecoration, []);

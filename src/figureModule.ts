@@ -1,5 +1,6 @@
 import path from "path";
 import * as vscode from "vscode";
+import { logMessage } from "./extension";
 
 const defaultReplacementString = `\\begin{figure}[h]
 	\\def\\svgwidth{\${1:#mul}\\columnwidth}
@@ -29,8 +30,8 @@ function processFilename(recordedPath: string): { dir: string; filename: string 
 function getReplacementString(startPos: vscode.Position, endPos: vscode.Position, figureName: string, editor: vscode.TextEditor) {
 	const lineNumber = startPos.line;
 	const lineText = editor.document.lineAt(lineNumber).text;
-	const indentationLength = lineText.search(/\S|$/);
-	const isAtStartOfLine = startPos.character === indentationLength;
+	const lineFirstChar = lineText.search(/\S|$/);
+	const isAtStartOfLine = startPos.character === lineFirstChar;
 	
 	let replacementString = vscode.workspace.getConfiguration("latex-helper").get<string>("figureEnvironmentSnippet", defaultReplacementString).replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 	if (!isAtStartOfLine) {
@@ -38,15 +39,7 @@ function getReplacementString(startPos: vscode.Position, endPos: vscode.Position
 	}
 
 	const { dir, filename } = processFilename(figureName);
-	replacementString = replacementString.replaceAll("#mul", "0.5").replaceAll("#dir", dir).replaceAll("#filename", filename);
-
-	const replacementLines = replacementString.split("\n");
-
-	for (let i = 1; i < replacementLines.length; i++) {
-		replacementLines[i] = " ".repeat(indentationLength) + replacementLines[i];
-	}
-
-	const finalReplacementString = replacementLines.join("\n");
+	const finalReplacementString = replacementString.replaceAll("#mul", "0.5").replaceAll("#dir", dir).replaceAll("#filename", filename);
 
 	return finalReplacementString;
 }
@@ -56,7 +49,7 @@ function replaceTextInRange(startPos: vscode.Position, endPos: vscode.Position) 
 	if (editor && startPos.isBefore(endPos)) {
 		const range = new vscode.Range(startPos, endPos);
 		const figureName = editor.document.getText(range).trim().substring(1);
-		vscode.window.showInformationMessage(`Figure name : ${figureName}`);
+		logMessage(`Figure name : ${figureName}`);
 		if (/\s/.test(figureName)) {
 			vscode.window.showWarningMessage(`Figure name should not contains whitespace.`);
 			return;
@@ -67,7 +60,7 @@ function replaceTextInRange(startPos: vscode.Position, endPos: vscode.Position) 
 		const snippet = new vscode.SnippetString(replacementString);
 
 		editor.insertSnippet(snippet, range).then(() => {
-			vscode.window.showInformationMessage(`Text replaced with the formatted string.`);
+			logMessage(`Figure snippet applied.`);
 		});
 	}
 }

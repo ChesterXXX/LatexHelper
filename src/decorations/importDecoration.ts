@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { getImports } from "../utils/importRanges";
+import { logMessage } from "../extension";
 
 let importDirectoryDecoration: vscode.TextEditorDecorationType | undefined;
 let importFilenameDecoration: vscode.TextEditorDecorationType | undefined;
@@ -81,7 +82,7 @@ export function applyImportHighlights(editor: vscode.TextEditor) {
 }
 
 export function removeImportHighlights(editor: vscode.TextEditor) {
-	console.log("Removed all import decorations.");
+	logMessage("Removed all import decorations.");
 	setImportDecorations();
 	if (importDirectoryDecoration) {
 		editor.setDecorations(importDirectoryDecoration, []);

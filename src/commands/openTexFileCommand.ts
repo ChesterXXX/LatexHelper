@@ -1,15 +1,16 @@
 import * as vscode from "vscode";
 import { createFile, getFullPath, openFileInTab } from "../utils/fileUtils";
+import { logMessage } from "../extension";
 
 export function openTexFileInTab(arg: any) {
 	const fileName = arg["fileName"];
 
 	if (!fileName) {
-		vscode.window.showInformationMessage("No filename provided.");
+		vscode.window.showWarningMessage("No filename provided.");
 		return;
 	}
 
-	console.log(`Input file is : ${fileName}`);
+	logMessage(`Input file is : ${fileName}`);
 
 	const fullPath = getFullPath(fileName);
 	if (!fullPath) {

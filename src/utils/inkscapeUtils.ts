@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { exec } from "child_process";
+import { logMessage } from "../extension";
 
 let inkscapeLocation: string;
 let inkscapeExportCommand: string;
@@ -16,14 +17,14 @@ export function openInInkscape(imageFullPath: string) {
 	setInkscapeLocation();
     
     const openInkscapeCommand = `"${inkscapeLocation}" "${svgFullPath}"`;
-    console.log(`Opening InkScape : ${openInkscapeCommand}`);
+    logMessage(`Opening InkScape : ${openInkscapeCommand}`);
 	
     exec(openInkscapeCommand, (error, stdout, stderr) => {
 		if (error) {
 			console.error(`Error opening Inkscape: ${error}`);
 			return;
 		}
-		console.log(`Inkscape opened with output: ${stdout}`);
+		logMessage(`Inkscape opened with output: ${stdout}`);
 	});
 }
 
@@ -35,13 +36,13 @@ export function exportPdfTex(imageFullPath:string) {
 
 	const exportCommand = inkscapeExportCommand.replaceAll("#executable", inkscapeLocation).replaceAll("#pdf", pdfFullPath).replaceAll("#svg", svgFullPath);
 
-    console.log(`Exporting to pdf_tex : ${exportCommand}`);
+    logMessage(`Exporting to pdf_tex : ${exportCommand}`);
 	
     exec(exportCommand, (error, stdout, stderr) => {
 		if (error) {
 			console.error(`Error exporting PDFTeX: ${error}`);
 			return;
 		}
-		console.log(`PDFTeX exported with output: ${stdout}`);
+		logMessage(`PDFTeX exported with output: ${stdout}`);
 	});
 }

@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { applyImportHighlights, removeImportHighlights } from "./decorations/importDecoration";
 import { importDocumentLinksProvider } from "./links/importDocumentLinks";
 import { openInExternalGraphicsEditor } from "./commands/openInExternalGraphicsEditorCommand";
+import { logMessage } from "./extension";
 
 let importDocumentLinkDisposable: vscode.Disposable | undefined;
 let openInExternalGraphicsEditorDisposable: vscode.Disposable | undefined;
@@ -41,7 +42,6 @@ export function importTextActivate(context: vscode.ExtensionContext) {
 		vscode.workspace.onDidOpenTextDocument(applyImportEffectsIfLatex),
 		vscode.workspace.onDidCloseTextDocument(importTextDeactivate),
 		vscode.workspace.onDidChangeTextDocument((event) => {
-			const editor = vscode.window.activeTextEditor;
 			if (editor && editor.document === event.document) {
 				applyImportEffectsIfLatex(editor.document);
 			}
@@ -60,7 +60,7 @@ export function importTextActivate(context: vscode.ExtensionContext) {
 			applyImportEffectsIfLatex(editor.document);
 		}
 	});
-	console.log("Applied import effects.");
+	logMessage("Applied import effects.");
 }
 
 export function importTextDeactivate() {
@@ -76,5 +76,5 @@ export function importTextDeactivate() {
 		openInExternalGraphicsEditorDisposable.dispose();
 		openInExternalGraphicsEditorDisposable = undefined;
 	}
-	console.log("Removed all import effects.");
+	logMessage("Removed all import effects.");
 }

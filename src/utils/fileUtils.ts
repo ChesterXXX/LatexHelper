@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
+import { logMessage } from "../extension";
 
 export function getFullPath(fileName: string): string | null {
 	const regex = /^([a-zA-Z0-9-_./]+\/)?([a-zA-Z0-9-_]+)(\.[a-zA-Z0-9_]+)?$/;
@@ -42,11 +43,11 @@ export function createFile(fullPath: string): boolean {
 		const dir = path.dirname(fullPath);
 		if (!fs.existsSync(dir)) {
 			fs.mkdirSync(dir, { recursive: true });
-			console.log(`Created directories: ${dir}`);
+			logMessage(`Created directories: ${dir}`);
 		}
 
 		fs.writeFileSync(fullPath, "");
-		console.log(`Created new file : ${fullPath}`);
+		logMessage(`Created new file : ${fullPath}`);
 		return true;
 	} catch (error) {
 		vscode.window.showErrorMessage(`Failed to create the file :\n${fullPath}`);
@@ -59,17 +60,17 @@ export function createSVGFile(imageFullPath: string): boolean {
 	const svgFullPath = `${imageFullPath}.svg`;
 	try {
 		if (fs.existsSync(svgFullPath)) {
-			console.log(`SVG file exists : ${svgFullPath}.`);
+			logMessage(`SVG file exists : ${svgFullPath}.`);
 			return true;
 		}
 		const dir = path.dirname(svgFullPath);
 		if (!fs.existsSync(dir)) {
 			fs.mkdirSync(dir, { recursive: true });
-			console.log(`Created directories: ${dir}`);
+			logMessage(`Created directories: ${dir}`);
 		}
 		const svgTemplate = getSVGTemplate();
 		fs.writeFileSync(svgFullPath, svgTemplate);
-		console.log(`Created new SVG file : ${svgFullPath}`);
+		logMessage(`Created new SVG file : ${svgFullPath}`);
 		return true;
 	} catch (error) {
 		vscode.window.showErrorMessage(`Failed to create the svg file :\n${svgFullPath}`);
