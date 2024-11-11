@@ -27,6 +27,17 @@ A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhanc
         ```
     -   Tabstops are provided to edit the values in `\svgwidth`, `\label`, and `\caption`.
     -   The figure code, including tabstops, can be customized.
+    -   The snippet behavior can probably be obtained using the extension [HyperSnips](vscode:extension/draivin.hsnips). You can add the following to your latex.hsnips file
+        ```
+        snippet `@([\w\/]+)\/([\w]+);` "Figure" iA
+        \begin{figure}[h]
+            \def\svgwidth{${1:0.5}\columnwidth}
+            \import{./``rv=m[1]``}{``rv=m[2]``.pdf_tex}
+            \label{fig:${2:``rv=m[2]``}}
+            \caption{${3:Some Figure}}
+        \end{figure}$0
+        endsnippet
+        ```
 
 #### InkScape Support
 -   Clicking `figname` in `\import{dir}{figname.pdf_tex}` opens the SVG file `dir/figname.svg` via [InkScape](https://inkscape.org/). The `.svg` file is created if necessary, with a customizable template.
