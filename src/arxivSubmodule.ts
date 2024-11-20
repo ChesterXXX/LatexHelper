@@ -3,6 +3,8 @@ import { logMessage } from "./extension";
 
 const BASE_URL = "http://export.arxiv.org/api/query";
 
+// 4783652,2411.01185,2409.02643,4085669,2307.11045,MR0440554
+
 function getBibStringFromArxivEntry(data: string, category: string = ""): string | undefined {
 	try {
 		const entryMatch = data.match(/<entry>[\s\S]*?<\/entry>/);
@@ -88,31 +90,6 @@ function getBibStringFromArxivEntry(data: string, category: string = ""): string
 	}
 }
 
-export async function getBibByAuthor(author: string, category = "math") {
-	const queryURL = `${BASE_URL}?search_query=au:${author}&start=0&max_results=100`;
-	logMessage(`ArXiV query: ${queryURL}`);
-	const bibEntries: string[] = [];
-	axios
-		.get(queryURL)
-		.then((response) => {
-			let xmlEntries = [...response.data.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].slice(1, 5);
-			xmlEntries.forEach((entry) => {
-				try {
-					const entryData = entry[0];
-					const bibString = getBibStringFromArxivEntry(entryData, category);
-					if (bibString) {
-						bibEntries.push(bibString);
-					}
-				} catch (error) {
-					logMessage(`Could not get from entry: ${entry}`, error);
-				}
-			});
-		})
-		.finally(() => {
-			return bibEntries;
-		});
-}
-
 export async function getBibStringArrayByAuthorFromArxiv(author: string, category = "math"): Promise<string[]> {
 	const queryURL = `${BASE_URL}?search_query=au:"${author}"&start=0&max_results=100`;
 	logMessage(`ArXiV query: ${queryURL}`);
@@ -130,7 +107,33 @@ export async function getBibStringArrayByAuthorFromArxiv(author: string, categor
 					bibEntries.push(bibString);
 				}
 			} catch (error) {
-				logMessage(`Could not get from entry: ${entry}`, error);
+				logMessage(`Could not get bib from entry: ${entry}`, error);
+			}
+		}
+	} catch (error) {
+		logMessage(`Error fetching data from ArXiV.`, error);
+	}
+	return bibEntries;
+}
+
+export async function getBibStringArrayByIdsFromArxiv(arxivCodes: string[]) {
+	const id_list = arxivCodes.map((x) => x.toLocaleLowerCase().replace(/arxiv:/, "")).join(",");
+	const queryURL = `${BASE_URL}?id_list=${id_list}`;
+	logMessage(`ArXiV query: ${queryURL}`);
+	const bibEntries: string[] = [];
+	try {
+		const response = await axios.get(queryURL);
+		const xmlEntries = [...response.data.matchAll(/<entry>([\s\S]*?)<\/entry>/g)];
+
+		for (const entry of xmlEntries) {
+			try {
+				const entryData = entry[0];
+				const bibString = getBibStringFromArxivEntry(entryData);
+				if (bibString) {
+					bibEntries.push(bibString);
+				}
+			} catch (error) {
+				logMessage(`Could not get bib from entry: ${entry}`, error);
 			}
 		}
 	} catch (error) {

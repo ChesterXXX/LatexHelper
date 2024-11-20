@@ -86,7 +86,7 @@ function attachFigureNameRecorderListener() {
 }
 
 
-export function figureActivation(context: vscode.ExtensionContext) {
+export function figureActivate(context: vscode.ExtensionContext) {
 	const figureTrigger = "@";
 
 	const figureTriggerListener = vscode.workspace.onDidChangeTextDocument((event) => {

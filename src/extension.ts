@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 import { inputTextActivate, inputTextDeactivate } from "./inputItemModule";
 import { importTextActivate, importTextDeactivate } from "./importItemModule";
-import { figureActivation } from "./figureModule";
+import { figureActivate } from "./figureModule";
 import { watchCachedFiles } from "./utils/cacheUtils";
 import { setupWatchers } from "./utils/fileWatchers";
-import { bibFileActivation } from "./bibModule";
+import { bibFileActivate } from "./bibModule";
 
 const outputChannel = vscode.window.createOutputChannel("LaTeX Helper");
 
@@ -31,10 +31,10 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	figureActivation(context);
+	figureActivate(context);
 	inputTextActivate(context);
 	importTextActivate(context);
-	bibFileActivation(context);
+	bibFileActivate(context);
 	setupWatchers();
 	watchCachedFiles();
 }
