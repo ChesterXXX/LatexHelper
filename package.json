@@ -18,14 +18,31 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onLanguage:latex"
+		"onLanguage:latex",
+		"onLanguage:bibtex"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "latex-helper.helloWorld",
-				"title": "Hello World"
+				"title": "LaTeX Helper: Hello World"
+			},
+			{
+				"command": "latex-helper.sortBibFileByCitationKey",
+				"title": "LaTeX Helper: Sort bib file by citation keys"
+			},
+			{
+				"command": "latex-helper.checkBibFileForDuplicateKeys",
+				"title": "LaTeX Helper: Check bib file for duplicate citation keys"
+			},
+			{
+				"command": "latex-helper.addToBibFile",
+				"title": "LaTeX Helper: Add new entries to bib file"
+			},
+			{
+				"command": "latex-helper.convertCitationKeys",
+				"title": "LaTeX Helper: Converts all citation keys"
 			}
 		],
 		"configuration": [
@@ -107,6 +124,8 @@
 		"webpack-cli": "^5.1.4"
 	},
 	"dependencies": {
+		"@retorquere/bibtex-parser": "^9.0.17",
+		"axios": "^1.7.7",
 		"chokidar": "^4.0.1"
 	}
 }
