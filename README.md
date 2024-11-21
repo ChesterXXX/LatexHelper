@@ -196,7 +196,7 @@ Customize the figure environment snippet with placeholders:
     ```json
     "latex-helper.replacements": {
         "top": "top",
-        ...
+        /*...*/
         "compact": "cpt",
         "charac": "char",
         "group": "grp",
@@ -206,7 +206,7 @@ Customize the figure environment snippet with placeholders:
 
 -   **List of common words to be ignored during citation key generation**: _Only for `Authors_Title` format_
     ```json
-    "latex-helper.commonWords": [ "a", "an", ... , "some", "like"]
+    "latex-helper.commonWords": [ "a", "an", /*...*/, "some", "like"]
     ```
 
 -   **Ignore title words after this cutoff**: _Only for `Authors_Title` format_
