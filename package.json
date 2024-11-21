@@ -47,6 +47,11 @@
 				"command": "latex-helper.convertCitationKeys",
 				"title": "LaTeX Helper: Convert all citation keys",
 				"enablement": "editorLangId == bibtex"
+			},
+			{
+				"command": "latex-helper.searchMasterBibFiles",
+				"title": "LaTeX Helper: Fuzzy search a list of bib files by citation key, author or title",
+				"enablement": "editorLangId == bibtex"
 			}
 		],
 		"configuration": [
@@ -98,6 +103,11 @@
 						"default": 80,
 						"description": "Default height of the SVG canvas."
 					},
+					"latex-helper.masterBibFiles":{
+						"type": "array",
+						"default": [],
+						"markdownDescription": "A list of `.bib` files to search bib entries from."
+					},
 					"latex-helper.citationKeyFormat": {
 						"type": "string",
 						"enum": [
@@ -106,7 +116,12 @@
 							"Authors_Title"
 						],
 						"default": "Default",
-						"description": "Choose the format for generating citation keys"
+						"description": "Choose the format for generating citation keys",
+						"markdownEnumDescriptions": [
+							"Uses the existing citation key.",
+							"Generates citation keys based on the first author's last name and the year of publication.\nExample: The Milnor-Stasheff book might get the key `MilSta1974`",
+							"Generates citation keys based on the first author's last name and the title of the paper.\nExample: The Milnor-Stasheff book might get the key `MilnorStasheff_CharClasses`"
+						]
 					},
 					"latex-helper.replacements": {
 						"type": "object",
@@ -212,6 +227,7 @@
 	"dependencies": {
 		"@retorquere/bibtex-parser": "^9.0.17",
 		"axios": "^1.7.7",
-		"chokidar": "^4.0.1"
+		"chokidar": "^4.0.1",
+		"fuse.js": "^7.0.0"
 	}
 }

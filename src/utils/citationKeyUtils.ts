@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as bibtexParser from "@retorquere/bibtex-parser";
-import { logMessage } from "../extension";
+import { sanitizeString } from "./textUtils";
 
 function getWordsCutoff(): number {
 	const config = vscode.workspace.getConfiguration("latex-helper");
@@ -18,16 +18,6 @@ function getReplacements(): { [key: string]: string } {
 
 function getCommonWords(): string[] {
 	return vscode.workspace.getConfiguration("latex-helper").get<string[]>("commonWords")!;
-}
-
-function sanitizeString(input: string): string {
-	let sanitized = input.normalize("NFD");
-
-	sanitized = sanitized.replace(/[\u0300-\u036f]/g, "");
-
-	sanitized = sanitized.replace(/[^a-zA-Z0-9]/g, "");
-
-	return sanitized;
 }
 
 function generateCitationKeyFromTitle(title: string): string {
@@ -124,7 +114,7 @@ function generateCitationKeyAuthorsYear(entry: bibtexParser.Entry) {
 }
 
 function generateCitationKeyDefault(entry: bibtexParser.Entry) {
-	return "";
+	return entry.key;
 }
 
 export function generateCitationKey(entry: bibtexParser.Entry): string {

@@ -3,6 +3,7 @@ import * as bibtexParser from "@retorquere/bibtex-parser";
 import * as fs from "fs";
 import { logMessage } from "../extension";
 import { generateCitationKey } from "./citationKeyUtils";
+import { removeAccents, sanitizeString } from "./textUtils";
 
 function autosortBibFileByKey(): boolean {
 	return vscode.workspace.getConfiguration("latex-helper").get<boolean>("autosortBibFile", true);
@@ -86,15 +87,14 @@ function processEntries(newEntries: bibtexParser.Entry[], bibData: bibtexParser.
 	const duplicateEntries: bibtexParser.Entry[] = [];
 
 	newEntries.forEach((newEntry) => {
-		const newKey = generateUniqueCitationKey(newEntry, bibData);
-		if (newKey) {
-			newEntry.input = formatBibEntryInput(newEntry, newKey);
-			newEntry.key = newKey;
-			validEntries.push(newEntry);
-		} else {
-			logMessage(`Could not generate unique key for entry.`);
-			newEntry.input = formatBibEntryInput(newEntry);
+		const newKey = generateCitationKey(newEntry);
+		newEntry.input = formatBibEntryInput(newEntry, newKey);
+		newEntry.key = newKey;
+		const keyExixts = bibData.entries.some((entry) => entry.key === newKey);
+		if (keyExixts) {
 			duplicateEntries.push(newEntry);
+		} else {
+			validEntries.push(newEntry);
 		}
 	});
 
@@ -104,16 +104,85 @@ function processEntries(newEntries: bibtexParser.Entry[], bibData: bibtexParser.
 async function handleDuplicateEntries(duplicateEntries: bibtexParser.Entry[], bibData: bibtexParser.Library): Promise<number> {
 	let duplicateCount = duplicateEntries.length;
 	if (duplicateCount > 0) {
-		const selection = await vscode.window.showWarningMessage("There are duplicate BibTeX entries. Do you want to add them anyway?", "Yes", "No");
+		const quickPick = vscode.window.createQuickPick();
+		quickPick.placeholder = "Select duplicate entries to add";
+		quickPick.canSelectMany = true;
+		quickPick.items = duplicateEntries.map((entry) => ({
+			label: entry.key,
+			description: entry.fields.title,
+			detail: entry.input,
+			alwaysShow: true, // Ensure items are always shown
+		}));
 
-		if (selection === "Yes") {
-			bibData.entries.push(...duplicateEntries);
-		} else {
-			logMessage("Ignoring duplicate entries");
-			duplicateCount = 0;
-		}
+		quickPick.onDidAccept(() => {
+			const selectedItems = quickPick.selectedItems.map((item) => item.detail);
+			if (selectedItems.length > 0) {
+				const selectedEntries = duplicateEntries.filter((entry) => selectedItems.includes(entry.input));
+				duplicateCount = selectedEntries.length;
+
+				bibData.entries.push(...selectedEntries);
+				logMessage(`Added ${selectedEntries.length} duplicate entries.`);
+			} else {
+				logMessage("No duplicate entry added.");
+			}
+			quickPick.hide();
+		});
+
+		quickPick.show();
+
+		await new Promise<void>((resolve) => {
+			quickPick.onDidHide(() => {
+				quickPick.dispose();
+				resolve();
+			});
+		});
 	}
 	return duplicateCount;
+}
+
+export async function addToBibFile(bibString: string | string[], filePath: string) {
+	try {
+		const bibData = readBibFile(filePath);
+		if (!bibData) {
+			logMessage(`Could not read the bib file: ${filePath}`);
+			return;
+		}
+
+		const newBibData = parseBibLibrary(bibString);
+		if (!newBibData) {
+			logMessage(`Error parsing new bib entry: ${bibString}`);
+			return;
+		}
+
+		const { validEntries, duplicateEntries } = processEntries(newBibData.entries, bibData);
+
+		let count = validEntries.length;
+
+		if (count > 0) {
+			bibData.entries.push(...validEntries);
+		}
+
+		const duplicateCount = await handleDuplicateEntries(duplicateEntries, bibData);
+
+		if (duplicateCount > 0) {
+			count += duplicateCount;
+		}
+
+		if (autosortBibFileByKey()) {
+			bibData.entries.sort((a, b) => a.key.toLocaleLowerCase().localeCompare(b.key.toLocaleLowerCase()));
+		}
+
+		writeBibFile(bibData, filePath);
+		if (count > 0) {
+			logMessage(`Total entry added: ${count}, to bib file: ${filePath}`);
+			vscode.window.showInformationMessage(`Total ${count} new ${count > 1 ? "entries" : "entry"} added successfully to bib file: ${filePath}`);
+		} else {
+			logMessage(`No new entries to add.`);
+			vscode.window.showInformationMessage(`No new entries added to bib file: ${filePath}`);
+		}
+	} catch (error) {
+		logMessage(`Error adding bib entry to file: ${filePath}`, error);
+	}
 }
 
 export function sortBibFileByKey(filePath: string) {
@@ -178,47 +247,33 @@ export function convertCitationKeys(filePath: string) {
 	}
 }
 
-export async function addToBibFile(bibString: string | string[], filePath: string) {
-	try {
+export function getMasterBibData(): bibtexParser.Entry[] {
+	const devExample: string[] = ["C:\\Users\\AritraLappy\\Desktop\\Test\\test 1.bib", "C:\\Users\\AritraLappy\\Desktop\\Test\\test 2.bib"];
+	const masterBibFiles = vscode.workspace.getConfiguration("latex-helper").get<string[]>("masterBibFiles", devExample);
+	const bibEntries: bibtexParser.Entry[] = [];
+	masterBibFiles.forEach((filePath) => {
 		const bibData = readBibFile(filePath);
-		if (!bibData) {
-			logMessage(`Could not read the bib file: ${filePath}`);
-			return;
+		if (bibData) {
+			bibData.entries.forEach((bibEntry) => bibEntries.push(bibEntry));
 		}
+	});
+	return bibEntries;
+}
 
-		const newBibData = parseBibLibrary(bibString);
-		if (!newBibData) {
-			logMessage(`Error parsing new bib entry: ${bibString}`);
-			return;
-		}
-
-		const { validEntries, duplicateEntries } = processEntries(newBibData.entries, bibData);
-
-		let count = validEntries.length;
-
-		if (count > 0) {
-			bibData.entries.push(...validEntries);
-		}
-
-		const duplicateCount = await handleDuplicateEntries(duplicateEntries, bibData);
-
-		if (duplicateCount > 0) {
-			count += duplicateCount;
-		}
-
-		if (autosortBibFileByKey()) {
-			bibData.entries.sort((a, b) => a.key.toLocaleLowerCase().localeCompare(b.key.toLocaleLowerCase()));
-		}
-
-		writeBibFile(bibData, filePath);
-		if (count > 0) {
-			logMessage(`Entries added: ${count}, to bib file: ${filePath}`);
-			vscode.window.showInformationMessage(`${count} new ${count > 1 ? "entries" : "entry"} added successfully to bib file: ${filePath}`);
-		} else {
-			logMessage(`No new entries to add.`);
-			vscode.window.showInformationMessage(`No new entries added to bib file: ${filePath}`);
-		}
-	} catch (error) {
-		logMessage(`Error adding bib entry to file: ${filePath}`, error);
+export function getBibItemForFuzzySearch(bib: bibtexParser.Entry, path: string) {
+	if (path === "title") {
+		return sanitizeString(bib.fields.title || "");
+	} else if (path === "key") {
+		return bib.key;
+	} else if (path === "authors") {
+		const authors: bibtexParser.Creator[] = bib.fields.author || bib.fields.bookauthor || [];
+		return authors
+			.map((author) => {
+				const authorName = `${author.firstName} ${author.lastName}`.trim() || author.name || "";
+				return removeAccents(authorName);
+			})
+			.join(", ");
+	} else {
+		return "";
 	}
 }
