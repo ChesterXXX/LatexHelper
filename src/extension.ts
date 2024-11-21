@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
-import { inputTextActivate, inputTextDeactivate } from "./inputItemModule";
-import { importTextActivate, importTextDeactivate } from "./importItemModule";
-import { figureActivate } from "./figureModule";
+import { inputTextActivate, inputTextDeactivate } from "./modules/inputItemModule";
+import { importTextActivate, importTextDeactivate } from "./modules/importItemModule";
+import { figureActivate } from "./modules/figureModule";
 import { watchCachedFiles } from "./utils/cacheUtils";
 import { setupWatchers } from "./utils/fileWatchers";
-import { bibFileActivate } from "./bibModule";
+import { bibFileActivate } from "./modules/bibModule";
 
 const outputChannel = vscode.window.createOutputChannel("LaTeX Helper");
 

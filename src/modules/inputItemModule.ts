@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { applyInputHighlights, removeInputHighlights } from "./decorations/inputDecoration";
-import { inputDocumentLinksProvider } from "./links/inputDocumentLinks";
-import { openTexFileInTab } from "./commands/openTexFileCommand";
-import { logMessage } from "./extension";
-import { hasLatexFileOpen } from "./utils/fileUtils";
+import { applyInputHighlights, removeInputHighlights } from "../decorations/inputDecoration";
+import { inputDocumentLinksProvider } from "../links/inputDocumentLinks";
+import { openTexFileInTab } from "../commands/openTexFileCommand";
+import { logMessage } from "../extension";
+import { hasLatexFileOpen } from "../utils/fileUtils";
 
 let inputDocumentLinkDisposable: vscode.Disposable | undefined;
 let openTexFileInTabDisposable: vscode.Disposable | undefined;

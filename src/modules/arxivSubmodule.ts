@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import axios from "axios";
-import { logMessage } from "./extension";
+import { logMessage } from "../extension";
 
 const BASE_URL = "http://export.arxiv.org/api/query";
 

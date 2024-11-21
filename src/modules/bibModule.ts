@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { logMessage } from "./extension";
-import { addToBibFile, checkBibFileForDuplicateKeys, convertCitationKeys, sortBibFileByKey } from "./utils/bibUtils";
+import { logMessage } from "../extension";
+import { addToBibFile, checkBibFileForDuplicateKeys, convertCitationKeys, sortBibFileByKey } from "../utils/bibUtils";
 import { getBibStringArrayByIdsFromArxiv } from "./arxivSubmodule";
 import { getBibStringByIdsFromMathSciNet } from "./mathscinetSubmodule";
 

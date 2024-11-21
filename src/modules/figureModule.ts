@@ -1,6 +1,6 @@
 import path from "path";
 import * as vscode from "vscode";
-import { logMessage } from "./extension";
+import { logMessage } from "../extension";
 
 const defaultReplacementString = `\\begin{figure}[h]
 	\\def\\svgwidth{\${1:#mul}\\columnwidth}

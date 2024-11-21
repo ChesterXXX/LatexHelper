@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { applyImportHighlights, removeImportHighlights } from "./decorations/importDecoration";
-import { importDocumentLinksProvider } from "./links/importDocumentLinks";
-import { openInExternalGraphicsEditor } from "./commands/openInExternalGraphicsEditorCommand";
-import { logMessage } from "./extension";
-import { hasLatexFileOpen } from "./utils/fileUtils";
+import { applyImportHighlights, removeImportHighlights } from "../decorations/importDecoration";
+import { importDocumentLinksProvider } from "../links/importDocumentLinks";
+import { openInExternalGraphicsEditor } from "../commands/openInExternalGraphicsEditorCommand";
+import { logMessage } from "../extension";
+import { hasLatexFileOpen } from "../utils/fileUtils";
 
 let importDocumentLinkDisposable: vscode.Disposable | undefined;
 let openInExternalGraphicsEditorDisposable: vscode.Disposable | undefined;
