@@ -1,9 +1,14 @@
+import * as vscode from "vscode";
 import axios from "axios";
 import { logMessage } from "./extension";
 
 const BASE_URL = "http://export.arxiv.org/api/query";
 
 // 4783652,2411.01185,2409.02643,4085669,2307.11045,MR0440554
+
+function getCategory(): string{
+	return vscode.workspace.getConfiguration("latex-helper").get("arxivCategory", "math");
+}
 
 function getBibStringFromArxivEntry(data: string, category: string = ""): string | undefined {
 	try {
@@ -90,10 +95,11 @@ function getBibStringFromArxivEntry(data: string, category: string = ""): string
 	}
 }
 
-export async function getBibStringArrayByAuthorFromArxiv(author: string, category = "math"): Promise<string[]> {
+export async function getBibStringArrayByAuthorFromArxiv(author: string): Promise<string[]> {
 	const queryURL = `${BASE_URL}?search_query=au:"${author}"&start=0&max_results=100`;
 	logMessage(`ArXiV query: ${queryURL}`);
 	const bibEntries: string[] = [];
+	const category: string = getCategory();
 
 	try {
 		const response = await axios.get(queryURL);

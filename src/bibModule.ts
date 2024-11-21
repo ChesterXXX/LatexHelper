@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { logMessage } from "./extension";
 import { addToBibFile, checkBibFileForDuplicateKeys, convertCitationKeys, sortBibFileByKey } from "./utils/bibUtils";
-import { getBibStringArrayByAuthorFromArxiv, getBibStringArrayByIdsFromArxiv } from "./arxivSubmodule";
+import { getBibStringArrayByIdsFromArxiv } from "./arxivSubmodule";
 import { getBibStringByIdsFromMathSciNet } from "./mathscinetSubmodule";
 
 export function bibFileActivate(context: vscode.ExtensionContext) {

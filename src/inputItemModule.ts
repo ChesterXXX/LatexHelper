@@ -8,14 +8,26 @@ import { hasLatexFileOpen } from "./utils/fileUtils";
 let inputDocumentLinkDisposable: vscode.Disposable | undefined;
 let openTexFileInTabDisposable: vscode.Disposable | undefined;
 
-function applyInputEffectsIfLatex(document: vscode.TextDocument) {
+function setInputEffectsActivated(context: vscode.ExtensionContext, state: boolean) {
+	context.globalState.update("inputEffectsActivated", state);
+}
+
+function getInputEffectsActivated(context: vscode.ExtensionContext): boolean {
+	return context.globalState.get("inputEffectsActivated", false);
+}
+
+function applyInputEffectsIfLatex(document: vscode.TextDocument, inputEffectsActivated: boolean): boolean {
 	const editor = vscode.window.activeTextEditor;
+
 	if (!editor || !document) {
-		return;
+		return inputEffectsActivated;
 	}
 
 	if (hasLatexFileOpen()) {
 		applyInputHighlights(editor);
+		if (inputEffectsActivated) {
+			return inputEffectsActivated;
+		}
 
 		if (!inputDocumentLinkDisposable) {
 			inputDocumentLinkDisposable = vscode.languages.registerDocumentLinkProvider(
@@ -28,14 +40,67 @@ function applyInputEffectsIfLatex(document: vscode.TextDocument) {
 		if (!openTexFileInTabDisposable) {
 			openTexFileInTabDisposable = vscode.commands.registerCommand("openTexFileInTab", (arg) => openTexFileInTab(arg));
 		}
+		inputEffectsActivated = true;
 	} else {
-		inputTextDeactivate();
+		inputEffectsActivated = inputTextDeactivate(inputEffectsActivated);
 	}
+	return inputEffectsActivated;
 }
 
-export function inputTextDeactivate() {
+export function inputTextActivate(context: vscode.ExtensionContext) {
+	const editor = vscode.window.activeTextEditor;
+	setInputEffectsActivated(context, false);
+
+	if (editor) {
+		let inputEffectsActivated = getInputEffectsActivated(context);
+		inputEffectsActivated = applyInputEffectsIfLatex(editor.document, inputEffectsActivated);
+		setInputEffectsActivated(context, inputEffectsActivated);
+	}
+
+	context.subscriptions.push(
+		vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
+			let inputEffectsActivated = getInputEffectsActivated(context);
+			inputEffectsActivated = applyInputEffectsIfLatex(document, inputEffectsActivated);
+			setInputEffectsActivated(context, inputEffectsActivated);
+		}),
+		vscode.workspace.onDidCloseTextDocument(() => {
+			let inputEffectsActivated = getInputEffectsActivated(context);
+			inputEffectsActivated = inputTextDeactivate(inputEffectsActivated);
+			setInputEffectsActivated(context, inputEffectsActivated);
+		}),
+		vscode.workspace.onDidChangeTextDocument((event) => {
+			if (editor && editor.document === event.document) {
+				let inputEffectsActivated = false; // Since the decoration range always changes.
+				inputEffectsActivated = applyInputEffectsIfLatex(editor.document, inputEffectsActivated);
+				setInputEffectsActivated(context, inputEffectsActivated);
+			}
+		}),
+		vscode.window.onDidChangeActiveTextEditor((editor) => {
+			if (editor) {
+				let inputEffectsActivated = getInputEffectsActivated(context);
+				inputEffectsActivated = applyInputEffectsIfLatex(editor.document, inputEffectsActivated);
+				setInputEffectsActivated(context, inputEffectsActivated);
+			}
+		})
+	);
+
+	vscode.window.onDidChangeActiveTextEditor((editor) => {
+		if (editor) {
+			let inputEffectsActivated = getInputEffectsActivated(context);
+			inputEffectsActivated = applyInputEffectsIfLatex(editor.document, inputEffectsActivated);
+			setInputEffectsActivated(context, inputEffectsActivated);
+		}
+	});
+
+	logMessage("Applied input effects.");
+}
+
+export function inputTextDeactivate(inputEffectsActivated: boolean = true): boolean {
+	const editor = vscode.window.activeTextEditor;
 	if (!hasLatexFileOpen()) {
-		const editor = vscode.window.activeTextEditor;
+		if (!inputEffectsActivated) {
+			return inputEffectsActivated;
+		}
 		if (editor) {
 			removeInputHighlights(editor);
 		}
@@ -47,42 +112,8 @@ export function inputTextDeactivate() {
 			openTexFileInTabDisposable.dispose();
 			openTexFileInTabDisposable = undefined;
 		}
-		logMessage("Removed all input effects.");
+		logMessage("Removed all input link effects.");
+		inputEffectsActivated = false;
 	}
-}
-
-export function inputTextActivate(context: vscode.ExtensionContext) {
-	const editor = vscode.window.activeTextEditor;
-	if (editor) {
-		applyInputEffectsIfLatex(editor.document);
-	}
-
-	context.subscriptions.push(
-		vscode.workspace.onDidOpenTextDocument(applyInputEffectsIfLatex),
-		vscode.workspace.onDidCloseTextDocument(inputTextDeactivate),
-		vscode.workspace.onDidChangeTextDocument((event) => {
-			if (editor && editor.document === event.document) {
-				applyInputEffectsIfLatex(editor.document);
-			}
-		}),
-		vscode.window.onDidChangeActiveTextEditor((editor) => {
-			if (editor) {
-				applyInputEffectsIfLatex(editor?.document);
-			}
-		})
-		// vscode.window.onDidChangeActiveTextEditor((editor) => {
-		// 	if (editor && editor.document.languageId === "latex") {
-		// 		applyInputEffectsIfLatex(editor.document);
-		// 	} else if (editor) {
-		// 		removeInputHighlights(editor);
-		// 	}
-		// })
-	);
-
-	vscode.window.onDidChangeActiveTextEditor((editor) => {
-		if (editor) {
-			applyInputEffectsIfLatex(editor.document);
-		}
-	});
-	logMessage("Applied input effects.");
+	return inputEffectsActivated;
 }

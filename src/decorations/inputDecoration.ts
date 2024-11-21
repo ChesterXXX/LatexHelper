@@ -37,6 +37,7 @@ export function applyInputHighlights(editor: vscode.TextEditor) {
 	if (decorations.length > 0 && inputDecoration) {
 		editor.setDecorations(inputDecoration, decorations);
 	}
+	logMessage("Applied input highlights.");
 }
 
 export function removeInputHighlights(editor: vscode.TextEditor) {

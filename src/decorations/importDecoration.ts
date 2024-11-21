@@ -27,7 +27,7 @@ function createImportDecorationsFromConfig() {
 		fontStyle: "italic",
 	});
 
-	if (importPdfTexExtensionDecoration){
+	if (importPdfTexExtensionDecoration) {
 		importPdfTexExtensionDecoration.dispose();
 	}
 	importPdfTexExtensionDecoration = vscode.window.createTextEditorDecorationType({
@@ -51,7 +51,7 @@ function getImportDecorationRanges(document: vscode.TextDocument) {
 		};
 		directoryDecorations.push(directoryDecoration);
 		filenameDecorations.push(filenameDecoration);
-		if(importItem.isPdfTex && importItem.pdftexRange){
+		if (importItem.isPdfTex && importItem.pdftexRange) {
 			const extensionDecoration: vscode.DecorationOptions = {
 				range: importItem.pdftexRange,
 			};
@@ -76,6 +76,8 @@ export function applyImportHighlights(editor: vscode.TextEditor) {
 	if (decorations.extensionDecorations.length > 0 && importPdfTexExtensionDecoration) {
 		editor.setDecorations(importPdfTexExtensionDecoration, decorations.extensionDecorations);
 	}
+
+	logMessage("Applied import highlights.");
 }
 
 export function removeImportHighlights(editor: vscode.TextEditor) {
@@ -95,5 +97,6 @@ export function removeImportHighlights(editor: vscode.TextEditor) {
 		importPdfTexExtensionDecoration.dispose();
 		importPdfTexExtensionDecoration = undefined;
 	}
+
 	logMessage("Removed all import decorations.");
 }
