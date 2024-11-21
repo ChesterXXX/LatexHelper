@@ -4,8 +4,6 @@ import { logMessage } from "../extension";
 
 const BASE_URL = "http://export.arxiv.org/api/query";
 
-// 4783652,2411.01185,2409.02643,4085669,2307.11045,MR0440554
-
 function getCategory(): string{
 	return vscode.workspace.getConfiguration("latex-helper").get("arxivCategory", "math");
 }

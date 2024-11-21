@@ -1,45 +1,57 @@
 import * as vscode from "vscode";
 import { inputTextActivate, inputTextDeactivate } from "./modules/inputItemModule";
 import { importTextActivate, importTextDeactivate } from "./modules/importItemModule";
-import { figureActivate } from "./modules/figureModule";
+import { figureSnippetActivate, figureSnippetDeactivate } from "./modules/figureModule";
 import { watchCachedFiles } from "./utils/cacheUtils";
 import { setupWatchers } from "./utils/fileWatchers";
 import { bibFileActivate } from "./modules/bibModule";
+import { activateFuse } from "./modules/fuzzySubmodule";
 
 const outputChannel = vscode.window.createOutputChannel("LaTeX Helper");
 
-
-export function logMessage(message: string, error: any=undefined) {
+export function logMessage(message: string, error: any = undefined) {
 	outputChannel.appendLine(message);
-	if(error){
+	if (error) {
 		outputChannel.appendLine(error);
 	}
+}
+
+function isFigureSnippetAcitvated(): boolean {
+	return vscode.workspace.getConfiguration("latex-helper").get<boolean>("figureSnippetActivated", false);
 }
 
 export function activate(context: vscode.ExtensionContext) {
 	logMessage('The extension "latex-helper" is now active!');
 
-	// Hello world!
 	context.subscriptions.push(
-		vscode.commands.registerCommand("latex-helper.helloWorld", async () => {
-			const userInput = await vscode.window.showInputBox({ prompt: "Enter something" });
-			if(userInput){
-				logMessage(`Input: ${userInput}`);
-				vscode.window.showInformationMessage(`Hello ${userInput}! Welcome to LaTeX Helper!`);
+		vscode.workspace.onDidChangeConfiguration((e) => {
+			if (e.affectsConfiguration("latex-helper.figureSnippetActivated")) {
+				if (isFigureSnippetAcitvated()) {
+					figureSnippetActivate(context);
+				} else {
+					figureSnippetDeactivate();
+				}
 			}
-        
+			if (e.affectsConfiguration("latex-helper.masterBibFiles")) {
+				activateFuse();
+			}
 		})
 	);
 
-	figureActivate(context);
 	inputTextActivate(context);
 	importTextActivate(context);
-	bibFileActivate(context);
 	setupWatchers();
 	watchCachedFiles();
+	if (isFigureSnippetAcitvated()) {
+		figureSnippetActivate(context);
+	}
+	bibFileActivate(context);
 }
 
 export function deactivate() {
 	inputTextDeactivate();
 	importTextDeactivate();
+	if (isFigureSnippetAcitvated()) {
+		figureSnippetDeactivate();
+	}
 }

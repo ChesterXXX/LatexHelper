@@ -111,7 +111,7 @@ async function handleDuplicateEntries(duplicateEntries: bibtexParser.Entry[], bi
 			label: entry.key,
 			description: entry.fields.title,
 			detail: entry.input,
-			alwaysShow: true, // Ensure items are always shown
+			alwaysShow: true,
 		}));
 
 		quickPick.onDidAccept(() => {
@@ -248,8 +248,7 @@ export function convertCitationKeys(filePath: string) {
 }
 
 export function getMasterBibData(): bibtexParser.Entry[] {
-	const devExample: string[] = ["C:\\Users\\AritraLappy\\Desktop\\Test\\test 1.bib", "C:\\Users\\AritraLappy\\Desktop\\Test\\test 2.bib"];
-	const masterBibFiles = vscode.workspace.getConfiguration("latex-helper").get<string[]>("masterBibFiles", devExample);
+	const masterBibFiles = vscode.workspace.getConfiguration("latex-helper").get<string[]>("masterBibFiles", []);
 	const bibEntries: bibtexParser.Entry[] = [];
 	masterBibFiles.forEach((filePath) => {
 		const bibData = readBibFile(filePath);

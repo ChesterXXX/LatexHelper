@@ -2,11 +2,11 @@
 	"name": "latex-helper",
 	"displayName": "LaTeX Helper",
 	"description": "Adds some utilities for writing in LaTeX. Primarily aimed at math articles.",
-	"publisher": "Aritra Bhowmick",
+	"publisher": "ChesterXXX",
 	"author": "Aritra Bhowmick",
 	"icon": "assets/icon.png",
 	"license": "MIT",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"repository": {
 		"type": "git",
 		"url": "https://www.github.com/ChesterXXX"
@@ -58,6 +58,10 @@
 			{
 				"title": "LaTeX Helper Configuration",
 				"properties": {
+					"latex-helper.figureSnippetActivated": {
+						"type": "boolean",
+						"default": false
+					},
 					"latex-helper.inputTextHighlightColor": {
 						"type": "string",
 						"default": "DodgerBlue",
@@ -103,7 +107,7 @@
 						"default": 80,
 						"description": "Default height of the SVG canvas."
 					},
-					"latex-helper.masterBibFiles":{
+					"latex-helper.masterBibFiles": {
 						"type": "array",
 						"default": [],
 						"markdownDescription": "A list of `.bib` files to search bib entries from."

@@ -42,13 +42,15 @@ function registerCommands(context: vscode.ExtensionContext) {
 			}
 		}),
 		vscode.commands.registerCommand("latex-helper.addToBibFileByIDs", async () => {
-			// 4783652,2411.01185,2409.02643,4085669,2307.11045,MR0440554
 			const editor = vscode.window.activeTextEditor;
 
 			if (editor) {
 				const filePath = editor.document.uri.fsPath;
 				logMessage(`Bib file path to add entries to: ${filePath}`);
-				const userInput = await vscode.window.showInputBox({ prompt: "Enter comma-separated list of MathScieNet and ArXiV codes." });
+				const userInput = await vscode.window.showInputBox({
+					placeHolder: "4783652,2411.01185,arxiv:2409.02643,4085669,2307.11045,MR0440554",
+					prompt: "Enter comma-separated list of MathScieNet and ArXiV codes.",
+				});
 				if (userInput) {
 					logMessage(`User input: ${userInput}`);
 					const codes = userInput.split(",").map((x) => x.trim());
@@ -109,7 +111,7 @@ function registerCommands(context: vscode.ExtensionContext) {
 					if (itemCount > 0) {
 						const filePath = editor.document.uri.fsPath;
 						logMessage(`${itemCount} item${itemCount > 1 ? "s" : ""} selected to add to the bib file: ${filePath}`);
-						const bibString = selectedItems.map(item => item.detail).join('\n');
+						const bibString = selectedItems.map((item) => item.detail).join("\n");
 						addToBibFile(bibString, filePath);
 					}
 					searchBox.hide();

@@ -28,7 +28,7 @@ A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhanc
 -   Clicking `filename` in `\input{filename}` will auto-create a new `filename.tex` file if it doesn't already exist, then opens it in a new tab or switches to an existing tab if it's already open.
 
 #### Figure Snippet
--   Provides a snippet that generates a LaTeX figure environment:
+-   Provides a snippet, which is disabled by default, to generate a LaTeX figure environment:
     -   The snippet is activated by typing `@` (customizable), and is triggered on space or a new line.
     -   Pressing `SPACEBAR`, `TAB`, or `ENTER` after typing `@fig/test_fig` will generate the following code:
         ```
@@ -60,12 +60,11 @@ A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhanc
 -   This behavior is achieved by using the npm file watcher package [chokidar](https://www.npmjs.com/package/chokidar) and is inspired by the extension [Super Figure](https://marketplace.visualstudio.com/items?itemName=peterson.super-figure), which has more robust support (e.g., support for Typst and GIMP).
 
 #### BibTex Support
--   Handles `bibtex` entries via the npm library [bibtex-parser](https://www.npmjs.com/package/@retorquere/bibtex-parser).
+-   Handles `bibtex` entries via the npm library [@retorquere/bibtex-parser](https://www.npmjs.com/package/@retorquere/bibtex-parser).
 -   Supports sorting `bibtex` files by citation keys.
 -   Supporst automatically generating citation keys, while handling duplication.
--   Supports adding new `bibtex` entries from [ArXiV](https://arxiv.org/).
--   Supports adding new `bibtex` entries from [MathSciNet](https://mathscinet.ams.org/mathscinet/publications-search).
--   Supports searching for `bibtex` etries from a list of existing `.bib` files and adding them. Uses the package [fuse.js](https://www.npmjs.com/package/fuse.js?activeTab=readme) for fuzzy search.
+-   Supports adding new `bibtex` entries from [ArXiV](https://arxiv.org/) and from [MathSciNet](https://mathscinet.ams.org/mathscinet/publications-search). Uses the [axios](https://www.npmjs.com/package/axios) package.
+-   Supports searching for `bibtex` etries from a list of existing `.bib` files and adding them. Uses the package [fuse.js](https://www.npmjs.com/package/fuse.js) for fuzzy search.
 
 ##  Commands
 
@@ -118,11 +117,15 @@ You can customize the following settings in your `settings.json`:
 
 #### LaTeX Figure Environment Snippet
 
-Customize the figure environment snippet with placeholders:
+-   **Enable or disable the figure snippet**:
+    ```json
+    "latex-helper.figureSnippetActivated": false
+    ```
 
--   `#mul` for width multiplier
--   `#dir` for directory
--   `#filename` for filename
+-   **Customize the figure environment snippet with placeholders**:
+    -   `#mul` for width multiplier
+    -   `#dir` for directory
+    -   `#filename` for filename
     ```json
     "latex-helper.figureEnvironmentSnippet": "\\begin{figure}[h]\\n\\t\\def\\svgwidth{${1:#mul}\\columnwidth}\\n\\t\\import{#dir}{#filename.pdf_tex}\\n\\t\\label{fig:${2:#filename}}\\n\\t\\caption{${3:Some Figure}}\\n\\end{figure}"
     ```

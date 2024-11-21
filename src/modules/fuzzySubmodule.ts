@@ -36,7 +36,6 @@ export function activateFuse() {
 		inializeFuse(bibEntries)
 			.then(() => {
 				logMessage("Fuse activated.");
-				// logMessage(fuse._docs.length);
 			})
 			.catch((error) => {
 				logMessage("Error activating Fuse.", error);
@@ -79,15 +78,3 @@ export function fuzzySplitQuerySearch(query: string): bibtexParser.Entry[] {
 	);
 	return matchingEntries;
 }
-
-// let debounceTimeout: NodeJS.Timeout | null = null;
-
-// export function searchWithDebounce(query: string) {
-// 	if (debounceTimeout) {
-// 		clearTimeout(debounceTimeout);
-// 	}
-// 	debounceTimeout = setTimeout(async () => {
-// 		const results = await fuzzySplitQuerySearch(query);
-// 		console.log(results);
-// 	}, 300);
-// }

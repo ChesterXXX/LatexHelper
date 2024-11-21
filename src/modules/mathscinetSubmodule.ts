@@ -2,8 +2,6 @@ import axios from "axios";
 import { logMessage } from "../extension";
 import * as vscode from "vscode";
 
-//const query = https://mathscinet.ams.org/mathscinet/api/publications/format?formats=bib&ids=4783652
-
 const BASE_URL = "https://mathscinet.ams.org/mathscinet/api/publications/format?formats=bib&ids=";
 
 export async function getBibStringByIdsFromMathSciNet(mrCodes: string[]): Promise<string[]> {

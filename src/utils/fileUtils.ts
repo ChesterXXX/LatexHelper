@@ -30,7 +30,6 @@ function getSVGTemplate(){
     const width = config.get<number>('svgWidth', 160);
     const height = config.get<number>('svgHeight', 80);
 	
-	// <svg width="160" height="80" viewBox="0 0 160 80" />
     const svgTemplate = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" />`;
 
     return svgTemplate;

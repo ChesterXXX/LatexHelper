@@ -70,7 +70,7 @@ export function inputTextActivate(context: vscode.ExtensionContext) {
 		}),
 		vscode.workspace.onDidChangeTextDocument((event) => {
 			if (editor && editor.document === event.document) {
-				let inputEffectsActivated = false; // Since the decoration range always changes.
+				let inputEffectsActivated = false;
 				inputEffectsActivated = applyInputEffectsIfLatex(editor.document, inputEffectsActivated);
 				setInputEffectsActivated(context, inputEffectsActivated);
 			}

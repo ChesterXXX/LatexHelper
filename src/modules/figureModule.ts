@@ -9,7 +9,8 @@ const defaultReplacementString = `\\begin{figure}[h]
 	\\caption{\${3:Some Figure}}
 \\end{figure}`;
 
-let figureNameRecorder: vscode.Disposable | undefined;
+let figureNameRecorderDisposable: vscode.Disposable | undefined;
+let figureTriggerListenerDisposable: vscode.Disposable | undefined;
 let isRecording = false;
 let startPos: vscode.Position | undefined = undefined;
 let endPos: vscode.Position | undefined = undefined;
@@ -32,8 +33,8 @@ function getReplacementString(startPos: vscode.Position, endPos: vscode.Position
 	const lineText = editor.document.lineAt(lineNumber).text;
 	const lineFirstChar = lineText.search(/\S|$/);
 	const isAtStartOfLine = startPos.character === lineFirstChar;
-	
-	let replacementString = vscode.workspace.getConfiguration("latex-helper").get<string>("figureEnvironmentSnippet", defaultReplacementString).replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+
+	let replacementString = vscode.workspace.getConfiguration("latex-helper").get<string>("figureEnvironmentSnippet", defaultReplacementString).replace(/\\n/g, "\n").replace(/\\t/g, "\t");
 	if (!isAtStartOfLine) {
 		replacementString = `\n${replacementString}`;
 	}
@@ -66,7 +67,7 @@ function replaceTextInRange(startPos: vscode.Position, endPos: vscode.Position) 
 }
 
 function attachFigureNameRecorderListener() {
-	figureNameRecorder = vscode.workspace.onDidChangeTextDocument((event) => {
+	figureNameRecorderDisposable = vscode.workspace.onDidChangeTextDocument((event) => {
 		const editor = vscode.window.activeTextEditor;
 		if (editor && event.document === editor.document) {
 			const change = event.contentChanges[0];
@@ -79,17 +80,16 @@ function attachFigureNameRecorderListener() {
 					startPos = undefined;
 					endPos = undefined;
 				}
-				figureNameRecorder?.dispose();
+				figureNameRecorderDisposable?.dispose();
 			}
 		}
 	});
 }
 
-
-export function figureActivate(context: vscode.ExtensionContext) {
+export function figureSnippetActivate(context: vscode.ExtensionContext) {
 	const figureTrigger = "@";
 
-	const figureTriggerListener = vscode.workspace.onDidChangeTextDocument((event) => {
+	figureTriggerListenerDisposable = vscode.workspace.onDidChangeTextDocument((event) => {
 		const editor = vscode.window.activeTextEditor;
 		if (editor && event.document === editor.document) {
 			const change = event.contentChanges[0];
@@ -102,7 +102,7 @@ export function figureActivate(context: vscode.ExtensionContext) {
 						startPos = undefined;
 						endPos = undefined;
 					}
-					figureNameRecorder?.dispose();
+					figureNameRecorderDisposable?.dispose();
 				}
 				isRecording = true;
 				startPos = editor.selection.active;
@@ -112,5 +112,19 @@ export function figureActivate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(figureTriggerListener);
+	context.subscriptions.push(figureTriggerListenerDisposable);
+
+	logMessage("Figure snippet activated.");
+}
+
+export function figureSnippetDeactivate() {
+	if (figureNameRecorderDisposable) {
+		figureNameRecorderDisposable.dispose();
+		figureNameRecorderDisposable = undefined;
+	}
+	if (figureTriggerListenerDisposable) {
+		figureTriggerListenerDisposable.dispose();
+		figureTriggerListenerDisposable = undefined;
+	}
+	logMessage("Figure snippet deactivated.");
 }

@@ -73,7 +73,7 @@ export function importTextActivate(context: vscode.ExtensionContext) {
 		}),
 		vscode.workspace.onDidChangeTextDocument((event) => {
 			if (editor && editor.document === event.document) {
-				let importEffectsActivated = false; // Since the decoration range always changes.
+				let importEffectsActivated = false;
 				importEffectsActivated = applyImportEffectsIfLatex(editor.document, importEffectsActivated);
 				setImportEffectsActivated(context, importEffectsActivated);
 			}
