@@ -2,7 +2,21 @@
 
 A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhance the LaTeX editing experience. The principal inspiration comes from the work of [Gilles Castel](https://castel.dev/). I don't claim any originality here, as most of these features are already implemented by other, more robust extensions.
 
-## Features
+-   [Features](#features)
+    -   [Highlighting `\input{}` and `\import{}{}` statements meaningfully](#highlighting)
+    -   [Auto-create `.tex` files](#creating-tex-files-and-opening-them-in-tabs)
+    -   [Figure snippet](#figure-snippet)
+    -   [InkScape support, with auto-creating `.svg` and `.pdf_tex` files](#inkscape-support)
+    -   [BibTeX support, with auto-generating citation keys and populating from `ArXiV` and `MathSciNet`](#bibtex-support)
+-   [Available commands for `BibTeX` files](#commands)
+-   [Available configurations](#configurations)
+    -   [Highlight Colors](#highlight-colors)
+    -   [Figure Snippet](#latex-figure-environment-snippet)
+    -   [InkScape Settings](#inkscape-settings)
+    -   [SVG Settings](#svg-template-settings)
+    -   [BibTex Settings](#bibtex-file-settings)
+
+##  Features
 
 #### Highlighting
 -   Highlights `\input{filename}` within LaTeX documents.
@@ -51,8 +65,33 @@ A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhanc
 -   Supporst automatically generating citation keys, while handling duplication.
 -   Supports adding new `bibtex` entries from [ArXiV](https://arxiv.org/).
 -   Supports adding new `bibtex` entries from [MathSciNet](https://mathscinet.ams.org/mathscinet/publications-search).
+-   Supports searching for `bibtex` etries from a list of existing `.bib` files and adding them. Uses the package [fuse.js](https://www.npmjs.com/package/fuse.js?activeTab=readme) for fuzzy search.
 
-## Configurations
+##  Commands
+
+The following commands are available provided the editor language is `bibtex`.
+
+### `LaTeX Helper: Sort bib file by citation keys`
+- **Command**: `latex-helper.sortBibFileByCitationKey`
+- **Description**: Sorts a bib file by citation keys.
+
+### `LaTeX Helper: Check bib file for duplicate citation keys`
+- **Command**: `latex-helper.checkBibFileForDuplicateKeys`
+- **Description**: Checks a bib file for duplicate citation keys.
+
+### `LaTeX Helper: Add new entries to bib file MathSciNet or ArXiV IDs`
+- **Command**: `latex-helper.addToBibFileByIDs`
+- **Description**: Adds new entries to a bib file using MathSciNet or ArXiV IDs.
+
+### `LaTeX Helper: Convert all citation keys`
+- **Command**: `latex-helper.convertCitationKeys`
+- **Description**: Converts all citation keys in a bib file.
+
+### `LaTeX Helper: Fuzzy search a list of bib files by citation key, author or title`
+- **Command**: `latex-helper.searchMasterBibFiles`
+- **Description**: Performs a fuzzy search across a list of bib files by citation key, author, or title.
+
+##  Configurations
 
 You can customize the following settings in your `settings.json`:
 
@@ -114,6 +153,16 @@ Customize the figure environment snippet with placeholders:
 
 #### BibTex File Settings
 
+-   **A list of `.bib` files to do fuzzy search**:
+    ```json
+    "latex-helper.masterBibFiles": [],
+    ```
+
+-   **Automatically sort the entries in the bib file upon adding new ones**:
+    ```json
+    "latex-helper.autosortBibFile": true
+    ```
+
 -   **Choose the format for generating citation keys**:
     ```json
     "latex-helper.citationKeyFormat": "Default"
@@ -124,23 +173,23 @@ Customize the figure environment snippet with placeholders:
     -   `AuthorsYear` : Concatenates the author lastnames, cutoff by `latex-helper.authorCuttoff` value, and the year.
     -   `Authors_Title` : Concatenates all the author lastnames. Then concatenates all the words in the title, after removing some common words, shortening some other words, and cutting off total number of words.
     
-    As an example, consider the entry.
+    As an example, consider the `bibtex` entry obtained from MathSciNet.
     ```
     @book {MR440554,
             AUTHOR = {Milnor, John W. and Stasheff, James D.},
-                TITLE = {Characteristic classes},
+             TITLE = {Characteristic classes},
             SERIES = {Annals of Mathematics Studies, No. 76},
-            PUBLISHER = {Princeton University Press, Princeton, NJ; University of Tokyo Press, Tokyo},
-                YEAR = {1974},
-                PAGES = {vii+331},
-            MRCLASS = {57-01 (55-02 55F40 57D20)},
-            MRNUMBER = {440554},
+         PUBLISHER = {Princeton University Press, Princeton, NJ; University of Tokyo Press, Tokyo},
+              YEAR = {1974},
+             PAGES = {vii+331},
+           MRCLASS = {57-01 (55-02 55F40 57D20)},
+          MRNUMBER = {440554},
         MRREVIEWER = {F. Hirzebruch},
     }
     ```
     -   The generated key with `Default` will be unchanged, i.e., `MR440554`.
     -   The generated key with `AuthorsYear` will be `MilSta1974`, assuming `authorCuttoff` value is `3`.
-    -   The generated key with `Authros_Title` will be `MilnorStasheff_CharClasses`, assuming `wordsCutoff` value is `5`, with `commonWords` and `replacements` set to default values.
+    -   The generated key with `Authros_Title` will be `MilnorStasheff_CharClasses`, assuming `wordsCutoff` value is `5`, with `commonWords` and `replacements` set to the default values.
 
 
 -   **Dictionary of word replacements**: _Only for `Authors_Title` format_
@@ -168,11 +217,6 @@ Customize the figure environment snippet with placeholders:
 -   **Cutoff author names**: _Only for `AuthorsYear` format_
     ```json
     "latex-helper.authorCutoff": 3
-    ```
-
--   **Automatically sort the entries in the bib file upon adding new ones**:
-    ```json
-    "latex-helper.autosortBibFile": true
     ```
 
 
