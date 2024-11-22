@@ -1,60 +1,16 @@
 import * as fs from "fs";
-import * as path from "path";
-import * as vscode from "vscode";
 import { addPdfTexToWatchlist, addSvgToWatchlist, removePdfTexFromWatchlist, removeSvgFromWatchlist } from "./fileWatchers";
 import { logMessage } from "../extension";
-
-const cacheFileName = "latex-helper.json";
-
-function isWorkspaceAvailable(): boolean {
-	return vscode.workspace.workspaceFolders !== undefined;
-}
-
-function getCacheFilePath(): string {
-	let filePath: string;
-
-	if (isWorkspaceAvailable()) {
-		const workspaceFolder = vscode.workspace.workspaceFolders![0].uri.fsPath;
-		const vscodeFolderPath = path.join(workspaceFolder, ".vscode");
-		filePath = path.join(vscodeFolderPath, cacheFileName);
-
-		if (!fs.existsSync(vscodeFolderPath)) {
-			fs.mkdirSync(vscodeFolderPath, { recursive: true });
-		}
-	} else {
-		filePath = `${process.cwd()}/${cacheFileName}`;
-	}
-
-	if (!fs.existsSync(filePath)) {
-		fs.writeFileSync(filePath, "[]", "utf-8");
-		logMessage(`Created empty cache file: ${filePath}`);
-	}
-
-	return filePath;
-}
-
-function getFileWatchlist(): string[] {
-	const filePath = getCacheFilePath();
-	const fileData = fs.readFileSync(filePath, "utf-8");
-
-	try {
-		const watchlist = JSON.parse(fileData);
-		if (Array.isArray(watchlist)) {
-			return watchlist;
-		} else {
-			vscode.window.showWarningMessage("The cached data is not valid.");
-			return [];
-		}
-	} catch (error) {
-		vscode.window.showErrorMessage(`Error parsing JSON from cache file: ${error}`);
-		return [];
-	}
-}
+import { getLocalConfigFileWatchList, setLocalConfigFileWatchList } from "./localConfigUtils";
 
 export function watchCachedFiles() {
-	const cachedFiles = getFileWatchlist();
+	const cachedFiles = getLocalConfigFileWatchList();
+	if(!cachedFiles){
+		logMessage("Invalid cached watchlist");
+		return;
+	}
 
-	logMessage(`Cached watchlist:\n${cachedFiles}`);
+	logMessage(`Cached file watchlist:\n${cachedFiles.join('\n')}`);
 
 	cachedFiles.forEach((imageFullPath) => {
 		const svgFilePath = `${imageFullPath}.svg`;
@@ -71,7 +27,7 @@ export function watchCachedFiles() {
 		}
 
 		if (fs.existsSync(pdftexFilePath)) {
-			addPdfTexToWatchlist(imageFullPath);
+			addPdfTexToWatchlist(imageFullPath, true);
 			pdftexFileExists = true;
 		} else {
 			removePdfTexFromWatchlist(imageFullPath);
@@ -85,26 +41,34 @@ export function watchCachedFiles() {
 }
 
 export function addCachedFiles(filename: string) {
-	const cachedFiles = getFileWatchlist();
+	const cachedFiles = getLocalConfigFileWatchList();
+	if(!cachedFiles){
+		logMessage("Invalid cached watchlist");
+		return;
+	}
 	if (!cachedFiles.includes(filename)) {
 		cachedFiles.push(filename);
-		saveCachedFiles(cachedFiles);
+		setLocalConfigFileWatchList(cachedFiles);
 	}
 }
 
 export function removeCachedFiles(filename: string) {
-	const cachedFiles = getFileWatchlist();
+	const cachedFiles = getLocalConfigFileWatchList();
+	if(!cachedFiles){
+		logMessage("Invalid cached watchlist");
+		return;
+	}
 	const updatedCache = cachedFiles.filter((file) => file !== filename);
-	saveCachedFiles(updatedCache);
+	setLocalConfigFileWatchList(updatedCache);
 }
 
-function saveCachedFiles(files: string[]): void {
-	const cachePath = getCacheFilePath();
-	try {
-		const jsonData = JSON.stringify(files, null, 2);
-		fs.writeFileSync(cachePath, jsonData, "utf-8");
-		logMessage("Saved files to watch in cache.");
-	} catch (error) {
-		vscode.window.showErrorMessage(`Error saving cached files: ${error}`);
-	}
-}
+// function saveCachedFiles(files: string[]): void {
+// 	const cachePath = getCacheFilePath();
+// 	try {
+// 		const jsonData = JSON.stringify(files, null, 2);
+// 		fs.writeFileSync(cachePath, jsonData, "utf-8");
+// 		logMessage("Saved files to watch in cache.");
+// 	} catch (error) {
+// 		vscode.window.showErrorMessage(`Error saving cached files: ${error}`);
+// 	}
+// }
