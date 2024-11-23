@@ -4,20 +4,10 @@ import { logMessage } from "../extension";
 import { watchCachedFiles } from "./cacheUtils";
 import { exportPdfTex } from "./inkscapeUtils";
 import path from "path";
+import { latexWorkshopBuild } from "./latexWorkshopUtils";
 
 const svgWatcher: chokidar.FSWatcher = chokidar.watch([], { persistent: true });
 const pdftexWatcher: chokidar.FSWatcher = chokidar.watch([], { persistent: true });
-
-function latexWorkshopBuild(){
-	vscode.commands.executeCommand("latex-workshop.build").then(
-		() => {
-			logMessage("LaTeX Workshop build command executed successfully.");
-		},
-		(error) => {
-			logMessage(`Error executing LaTeX Workshop build command: ${error}`);
-		}
-	);
-}
 
 export function setupWatchers() {
 	svgWatcher
@@ -68,7 +58,7 @@ export function addSvgToWatchlist(imageFullPath: string) {
 	logMessage(`Started watching SVG file: ${svgFilePath}`);
 }
 
-export function addPdfTexToWatchlist(imageFullPath: string, initialization:boolean = false) {
+export function addPdfTexToWatchlist(imageFullPath: string, initialization: boolean = false) {
 	const pdftexFilePath = `${imageFullPath}.pdf_tex`;
 
 	for (const [dir, files] of Object.entries(pdftexWatcher.getWatched())) {
@@ -79,7 +69,7 @@ export function addPdfTexToWatchlist(imageFullPath: string, initialization:boole
 	}
 	pdftexWatcher.add(pdftexFilePath);
 	logMessage(`Started watching pdf_tex file: ${pdftexFilePath}`);
-	if(!initialization){
+	if (!initialization) {
 		latexWorkshopBuild();
 	}
 }

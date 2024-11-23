@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import * as bibtexParser from "@retorquere/bibtex-parser";
 import { logMessage } from "../extension";
 import { addToBibFile, checkBibFileForDuplicateKeys, convertCitationKeys, sortBibFileByKey } from "../utils/bibUtils";
 import { getBibStringArrayByIdsFromArxiv } from "./arxivSubmodule";

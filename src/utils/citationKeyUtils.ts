@@ -58,7 +58,7 @@ function generateCitationKeyFromAuthors(authors: bibtexParser.Creator[]) {
 
 function generateCitationKeyAuthorsTitle(entry: bibtexParser.Entry) {
 	const title = entry.fields.title;
-	const authors = entry.fields.author || entry.fields.bookauthor || undefined;
+	const authors = entry.fields.author || entry.fields.bookauthor || entry.fields.editor || entry.fields.editors || undefined;
 	let titleKey = "";
 	if (title) {
 		titleKey = generateCitationKeyFromTitle(title);
@@ -68,7 +68,7 @@ function generateCitationKeyAuthorsTitle(entry: bibtexParser.Entry) {
 		authorKey = generateCitationKeyFromAuthors(authors);
 	}
 	const newKey = `${authorKey}_${titleKey}`;
-	if (newKey) {
+	if (newKey !== "_") {
 		return newKey;
 	} else {
 		return entry.key;

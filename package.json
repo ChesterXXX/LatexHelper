@@ -58,10 +58,6 @@
 			{
 				"title": "LaTeX Helper Configuration",
 				"properties": {
-					"latex-helper.figureSnippetActivated": {
-						"type": "boolean",
-						"default": false
-					},
 					"latex-helper.inputTextHighlightColor": {
 						"type": "string",
 						"default": "DodgerBlue",
@@ -81,6 +77,10 @@
 						"type": "string",
 						"default": "Crimson",
 						"description": "Color to highlight the extension inside \\import{dir}{filename.pdf_tex}."
+					},
+					"latex-helper.figureSnippetActivated": {
+						"type": "boolean",
+						"default": false
 					},
 					"latex-helper.figureEnvironmentSnippet": {
 						"type": "string",
@@ -111,6 +111,21 @@
 						"type": "array",
 						"default": [],
 						"markdownDescription": "A list of `.bib` files to search bib entries from."
+					},
+					"latex-helper.autosortBibFile": {
+						"type": "boolean",
+						"default": true,
+						"description": "Automatically sorts the entries in the bib file upon adding new ones."
+					},
+					"latex-helper.wordsCutoff": {
+						"type": "number",
+						"default": 5,
+						"markdownDescription": "Ignore title words after this cutoff. Works only if `latex-helper.citationKeyFormat` is set to `Authors_Title`"
+					},
+					"latex-helper.authorCutoff": {
+						"type": "number",
+						"default": 3,
+						"markdownDescription": "Cutoff author names. Works only if `latex-helper.citationKeyFormat` is set to `AuthorsYear`"
 					},
 					"latex-helper.citationKeyFormat": {
 						"type": "string",
@@ -183,21 +198,6 @@
 							"like"
 						],
 						"markdownDescription": "List of common words to be ignored during citation key generation. Works only if `latex-helper.citationKeyFormat` is set to `Authors_Title`"
-					},
-					"latex-helper.wordsCutoff": {
-						"type": "number",
-						"default": 5,
-						"markdownDescription": "Ignore title words after this cutoff. Works only if `latex-helper.citationKeyFormat` is set to `Authors_Title`"
-					},
-					"latex-helper.authorCutoff": {
-						"type": "number",
-						"default": 3,
-						"markdownDescription": "Cutoff author names. Works only if `latex-helper.citationKeyFormat` is set to `AuthorsYear`"
-					},
-					"latex-helper.autosortBibFile": {
-						"type": "boolean",
-						"default": true,
-						"description": "Automatically sorts the entries in the bib file upon adding new ones."
 					}
 				}
 			}

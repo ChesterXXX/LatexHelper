@@ -185,14 +185,21 @@ export async function addToBibFile(bibString: string | string[], filePath: strin
 	}
 }
 
-export function sortBibFileByKey(filePath: string) {
+export async function sortBibFileByKey(filePath: string) {
 	try {
 		const bibData = readBibFile(filePath);
 		if (bibData) {
-			bibData.entries.sort((a, b) => (a.key.toLocaleLowerCase() < b.key.toLocaleLowerCase() ? -1 : 1));
-			if (writeBibFile(bibData, filePath)) {
-				logMessage(`Sorted the bib file by citation keys: ${filePath}`);
-				vscode.window.showInformationMessage(`Sorted the bib file by citation keys: ${filePath}`);
+			const response = await vscode.window.showInformationMessage("Sorting the bib file might break it as it depends on the parser. Are you sure?", { modal: true }, "Yes", "No");
+			if (response === "Yes") {
+				bibData.entries.sort((a, b) => (a.key.toLocaleLowerCase() < b.key.toLocaleLowerCase() ? -1 : 1));
+				if (writeBibFile(bibData, filePath)) {
+					logMessage(`Sorted the bib file by citation keys: ${filePath}`);
+					vscode.window.showInformationMessage(`Sorted the bib file by citation keys: ${filePath}`);
+				} else {
+					logMessage(`Error writing sorted bib data to file: ${filePath}`);
+				}
+			} else {
+				logMessage(`Canceled sorting: ${filePath}`);
 			}
 		}
 	} catch (error) {
@@ -226,21 +233,28 @@ export function checkBibFileForDuplicateKeys(filePath: string) {
 	}
 }
 
-export function convertCitationKeys(filePath: string) {
+export async function convertCitationKeys(filePath: string) {
 	try {
 		const bibData = readBibFile(filePath);
-		let modifiedBibStr = "";
-		if (bibData) {
-			bibData.entries.forEach((entry) => {
-				const newKey = generateCitationKey(entry);
-				modifiedBibStr += formatBibEntryInput(entry, newKey) + "\n";
-			});
-			const modifiedBibData = bibtexParser.parse(modifiedBibStr);
-			if (autosortBibFileByKey()) {
-				modifiedBibData.entries.sort((a, b) => (a.key.toLocaleLowerCase() < b.key.toLocaleLowerCase() ? -1 : 1));
+		if (bibData && bibData.entries && bibData.entries.length > 0) {
+			const response = await vscode.window.showWarningMessage("Converting the citation keys might break your project! Are you sure?", "Yes", "No");
+			if (response === "Yes") {
+				logMessage(`Detected entries before formatting: ${bibData.entries.length}`);
+				let modifiedBibStr = "";
+				bibData.entries.forEach((entry) => {
+					const newKey = generateCitationKey(entry);
+					modifiedBibStr += formatBibEntryInput(entry, newKey) + "\n";
+				});
+				const modifiedBibData = bibtexParser.parse(modifiedBibStr);
+				logMessage(`Entries after formatting: ${modifiedBibData.entries.length}`);
+				if (autosortBibFileByKey()) {
+					modifiedBibData.entries.sort((a, b) => (a.key.toLocaleLowerCase() < b.key.toLocaleLowerCase() ? -1 : 1));
+				}
+				writeBibFile(modifiedBibData, filePath);
+				logMessage(`Converted all citation keys in bib file: ${filePath}`);
+			} else {
+				logMessage(`Canceled converting: ${filePath}`);
 			}
-			writeBibFile(modifiedBibData, filePath);
-			logMessage(`Converted all citation keys in bib file: ${filePath}`);
 		}
 	} catch (error) {
 		logMessage(`Error converting citation keys in bib file: ${filePath}`, error);
