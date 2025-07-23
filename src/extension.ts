@@ -7,6 +7,7 @@ import { setupWatchersChokidar } from "./utils/fileWatchersChokidar";
 import { bibFileActivate } from "./modules/bibModule";
 import { activateFuse } from "./modules/fuzzySubmodule";
 import { disposeWatchersVSCodeAPI, setupWatchersVSCodeAPI } from "./utils/fileWatchersVSCodeAPI";
+import { texMergerActivate } from "./modules/texMergerModule";
 
 const outputChannel = vscode.window.createOutputChannel("LaTeX Helper");
 
@@ -63,6 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
 		figureSnippetActivate(context);
 	}
 	bibFileActivate(context);
+	texMergerActivate(context);
 }
 
 export function deactivate() {

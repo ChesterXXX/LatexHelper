@@ -29,6 +29,16 @@
 				"title": "LaTeX Helper: Hello World"
 			},
 			{
+				"command": "latex-helper.mergeTexFiles",
+				"title": "LaTeX Helper: Merge tex files to a single new file",
+				"enablement": "editorLangId == latex"
+			},
+			{
+				"command": "latex-helper.replaceBBL",
+				"title": "LaTeX Helper: Replace content of .bbl file",
+				"enablement": "editorLangId == latex"
+			},
+			{
 				"command": "latex-helper.sortBibFileByCitationKey",
 				"title": "LaTeX Helper: Sort bib file by citation keys",
 				"enablement": "editorLangId == bibtex"
@@ -106,6 +116,11 @@
 						"type": "number",
 						"default": 80,
 						"description": "Default height of the SVG canvas."
+					},
+					"latex-helper.useChokidar":{
+						"type":"boolean",
+						"default": false,
+						"markdownDescription": "Use the `chokidar` package to watch `.svg` and `.pdf_tex` files. Otherwise, use VSCode API which is faster but can only track files in the same workspace."
 					},
 					"latex-helper.masterBibFiles": {
 						"type": "array",
