@@ -1,14 +1,15 @@
 # LaTeX Helper
 
-A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhance the LaTeX editing experience. The principal inspiration comes from the work of [Gilles Castel](https://castel.dev/). I don't claim any originality here, as most of these features are already implemented by other, more robust extensions.
+A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhance the LaTeX editing experience. The principal inspiration comes from the work of [Gilles Castel](https://castel.dev/). I don't claim any originality here, as most of these features are already implemented by other, more robust extensions. In particular, regarding InkScape support, have a look at [Super Figure](https://marketplace.visualstudio.com/items?itemName=peterson.super-figure), which supports Typst and GIMP as well.
 
 -   [Features](#features)
     -   [Highlighting `\input{}` and `\import{}{}` statements meaningfully](#highlighting)
-    -   [Auto-create `.tex` files](#creating-tex-files-and-opening-them-in-tabs)
+    -   [Auto-create `.tex` files from `\input{}`](#creating-tex-files-and-opening-them-in-tabs)
+    -   [Create a single merged `.tex` file by replacing `\input{}`](#creating-a-single-merged-tex-file)
     -   [Figure snippet](#figure-snippet)
     -   [InkScape support, with auto-creating `.svg` and `.pdf_tex` files](#inkscape-support)
     -   [BibTeX support, with auto-generating citation keys and populating from `ArXiV` and `MathSciNet`](#bibtex-support)
--   [Available commands for `BibTeX` files](#commands)
+-   [Available commands](#commands)
 -   [Available configurations](#configurations)
     -   [Highlight Colors](#highlight-colors)
     -   [Figure Snippet](#latex-figure-environment-snippet)
@@ -26,6 +27,10 @@ A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhanc
 
 #### Creating `.tex` Files and Opening Them in Tabs
 -   Clicking `filename` in `\input{filename}` will auto-create a new `filename.tex` file if it doesn't already exist, then opens it in a new tab or switches to an existing tab if it's already open.
+
+#### Creating A Single Merged `.tex` File
+-   Creates a single `.tex` file by recursively replacing the content of `\input{filename}`.
+-   Optionally, replaces any `\bibliography{ref}` by the content of the `.bbl` file. This assumes that the project is compiled correctly, with `BibTeX` enabled.
 
 #### Figure Snippet
 -   Provides a snippet, which is disabled by default, to generate a LaTeX figure environment:
@@ -57,7 +62,8 @@ A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhanc
 -   Clicking `figname` in `\import{dir}{figname.pdf_tex}` opens the SVG file `dir/figname.svg` via [InkScape](https://inkscape.org/). The `.svg` file is created if necessary, with a customizable template.
 -   When the file `dir/figname.svg` is modified, InkScape automatically exports to `dir/figname.pdf` and `dir/figname.pdf_tex`.
 -   If [LaTeX Workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) is installed and active, then the LaTeX document is automatically compiled on any `dir/figname.pdf_tex` change, including first-time creation.
--   This behavior is achieved by using the npm file watcher package [chokidar](https://www.npmjs.com/package/chokidar) and is inspired by the extension [Super Figure](https://marketplace.visualstudio.com/items?itemName=peterson.super-figure), which has more robust support (e.g., support for Typst and GIMP).
+-   This behavior is achieved by using the VSCode native FileWatcher API, which only tracks file changes in the present workspace.
+-   Optionally, the npm file watcher package [chokidar](https://www.npmjs.com/package/chokidar) can be used as well. This can support tracking `.svg` files stored outside the workspace as well.
 
 #### BibTex Support
 -   Handles `bibtex` entries via the npm library [@retorquere/bibtex-parser](https://www.npmjs.com/package/@retorquere/bibtex-parser).
@@ -68,21 +74,33 @@ A VSCode extension by [Aritra Bhowmick](https://github.com/ChesterXXX) to enhanc
 
 ##  Commands
 
+### `latex` Commands
+The following commands are available provided the editor language is `latex`.
+
+#### `LaTeX Helper: Merge tex files into a single new file`
+- **Command**: `latex-helper.mergeTexFiles`
+- **Description**: Creates a new merged files by recursively replacing all `\input{}`, and optionally, replacing `\bibliography{}` by the content of the `.bbl` file.
+
+#### `LaTeX Helper: Replace content of .bbl file`
+- **Command**: `latex-helper.replaceBBL`
+- **Description**: Creates a new merged files by replacing `\bibliography{}` by the content of the `.bbl` file
+
+### `bibtex` Commands
 The following commands are available provided the editor language is `bibtex`.
 
-### `LaTeX Helper: Sort bib file by citation keys`
+#### `LaTeX Helper: Sort bib file by citation keys`
 - **Command**: `latex-helper.sortBibFileByCitationKey`
 - **Description**: Sorts a bib file by citation keys.
 
-### `LaTeX Helper: Check bib file for duplicate citation keys`
+#### `LaTeX Helper: Check bib file for duplicate citation keys`
 - **Command**: `latex-helper.checkBibFileForDuplicateKeys`
 - **Description**: Checks a bib file for duplicate citation keys.
 
-### `LaTeX Helper: Add new entries to bib file MathSciNet or ArXiV IDs`
+#### `LaTeX Helper: Add new entries to bib file MathSciNet or ArXiV IDs`
 - **Command**: `latex-helper.addToBibFileByIDs`
 - **Description**: Adds new entries to a bib file using MathSciNet or ArXiV IDs.
 
-### `LaTeX Helper: Convert all citation keys`
+#### `LaTeX Helper: Convert all citation keys`
 - **Command**: `latex-helper.convertCitationKeys`
 - **Description**: Converts all citation keys in a bib file.
 
@@ -140,6 +158,11 @@ You can customize the following settings in your `settings.json`:
 -   **Command for compiling SVG to pdf_tex**:
     ```json
     "latex-helper.inkscapeExportCommand": "\"#executable\" -D --export-latex --export-dpi 300 --export-filename=\"#pdf\" \"#svg\""
+    ```
+
+-   **Use VSCode FileWatcher API instead of `chokidar`:
+    ```json
+    "latex-helper.useChokidar": false
     ```
 
 #### SVG Template Settings

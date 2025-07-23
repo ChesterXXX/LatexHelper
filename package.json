@@ -30,7 +30,7 @@
 			},
 			{
 				"command": "latex-helper.mergeTexFiles",
-				"title": "LaTeX Helper: Merge tex files to a single new file",
+				"title": "LaTeX Helper: Merge tex files into a single new file",
 				"enablement": "editorLangId == latex"
 			},
 			{
