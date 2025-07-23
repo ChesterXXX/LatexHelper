@@ -40,11 +40,10 @@ export function setupWatchersVSCodeAPI(context: vscode.ExtensionContext) {
 		logMessage(`(VSCode API) pdf_tex file deleted: ${pdftexFilePath}`);
 	});
 
-	// Register for disposal when extension deactivates
 	context.subscriptions.push(svgWatcher, pdftexWatcher);
 }
 
-export function disposeWatchers() {
+export function disposeWatchersVSCodeAPI() {
 	if (svgWatcher) {
 		svgWatcher.dispose();
 	}

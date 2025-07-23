@@ -6,7 +6,7 @@ import { watchCachedFiles } from "./utils/cacheUtils";
 import { setupWatchersChokidar } from "./utils/fileWatchersChokidar";
 import { bibFileActivate } from "./modules/bibModule";
 import { activateFuse } from "./modules/fuzzySubmodule";
-import { setupWatchersVSCodeAPI } from "./utils/fileWatchersVSCodeAPI";
+import { disposeWatchersVSCodeAPI, setupWatchersVSCodeAPI } from "./utils/fileWatchersVSCodeAPI";
 
 const outputChannel = vscode.window.createOutputChannel("LaTeX Helper");
 
@@ -40,6 +40,14 @@ export function activate(context: vscode.ExtensionContext) {
 			if (e.affectsConfiguration("latex-helper.masterBibFiles")) {
 				activateFuse();
 			}
+			if (e.affectsConfiguration("latex-helper.useChokidar")) {
+				if (isChokidarUsed()) {
+					setupWatchersChokidar();
+					watchCachedFiles();
+				} else {
+					setupWatchersVSCodeAPI(context);
+				}
+			}
 		})
 	);
 
@@ -62,5 +70,8 @@ export function deactivate() {
 	importTextDeactivate();
 	if (isFigureSnippetAcitvated()) {
 		figureSnippetDeactivate();
+	}
+	if (!isChokidarUsed()) {
+		disposeWatchersVSCodeAPI();
 	}
 }
