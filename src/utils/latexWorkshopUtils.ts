@@ -33,3 +33,23 @@ export function latexWorkshopBuild() {
 		logMessage("LaTeX Workshop is not installed. Cannot build project.");
 	}
 }
+
+export function latexWorkshopFormatBib() {
+	const { isInstalled, isActive } = isLatexWorkshopAvailable();
+	if (isInstalled) {
+		if (isActive) {
+			vscode.commands.executeCommand("latex-workshop.bibalign").then(
+				() => {
+					logMessage("LaTeX Workshop bib align command executed successfully.");
+				},
+				(error) => {
+					logMessage(`Error executing LaTeX Workshop bib align command: ${error}`);
+				}
+			);
+		} else {
+			logMessage("LaTeX Workshop is installed, but not active. Cannot align bib.");
+		}
+	} else {
+		logMessage("LaTeX Workshop is not installed. Cannot align bib.");
+	}
+}

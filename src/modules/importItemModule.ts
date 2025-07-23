@@ -16,7 +16,7 @@ function getImportEffectsActivated(context: vscode.ExtensionContext): boolean {
 	return context.globalState.get("importEffectsActivated", false);
 }
 
-function applyImportEffectsIfLatex(document: vscode.TextDocument, importEffectsActivated: boolean): boolean {
+function createImportEffectsIfLatex(document: vscode.TextDocument, importEffectsActivated: boolean): boolean {
 	const editor = vscode.window.activeTextEditor;
 
 	if (!editor || !document) {
@@ -25,9 +25,9 @@ function applyImportEffectsIfLatex(document: vscode.TextDocument, importEffectsA
 
 	if (hasLatexFileOpen()) {
 		if (importEffectsActivated) {
-			return importEffectsActivated;
+			return importEffectsActivated; //true
 		}
-		
+
 		applyImportHighlights(editor);
 
 		if (!importDocumentLinkDisposable) {
@@ -55,15 +55,15 @@ export function importTextActivate(context: vscode.ExtensionContext) {
 	setImportEffectsActivated(context, false);
 
 	if (editor) {
-		let importEffectsActivated = getImportEffectsActivated(context);
-		importEffectsActivated = applyImportEffectsIfLatex(editor.document, importEffectsActivated);
+		let importEffectsActivated = getImportEffectsActivated(context); //false
+		importEffectsActivated = createImportEffectsIfLatex(editor.document, importEffectsActivated);
 		setImportEffectsActivated(context, importEffectsActivated);
 	}
 
 	context.subscriptions.push(
 		vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
 			let importEffectsActivated = getImportEffectsActivated(context);
-			importEffectsActivated = applyImportEffectsIfLatex(document, importEffectsActivated);
+			importEffectsActivated = createImportEffectsIfLatex(document, importEffectsActivated);
 			setImportEffectsActivated(context, importEffectsActivated);
 		}),
 		vscode.workspace.onDidCloseTextDocument(() => {
@@ -74,35 +74,35 @@ export function importTextActivate(context: vscode.ExtensionContext) {
 		vscode.workspace.onDidChangeTextDocument((event) => {
 			if (editor && editor.document === event.document) {
 				let importEffectsActivated = false;
-				importEffectsActivated = applyImportEffectsIfLatex(editor.document, importEffectsActivated);
+				importEffectsActivated = createImportEffectsIfLatex(editor.document, importEffectsActivated);
 				setImportEffectsActivated(context, importEffectsActivated);
 			}
 		}),
 		vscode.window.onDidChangeActiveTextEditor((editor) => {
 			if (editor) {
 				let importEffectsActivated = getImportEffectsActivated(context);
-				importEffectsActivated = applyImportEffectsIfLatex(editor.document, importEffectsActivated);
+				importEffectsActivated = createImportEffectsIfLatex(editor.document, importEffectsActivated);
 				setImportEffectsActivated(context, importEffectsActivated);
 			}
 		})
 	);
 
-	vscode.window.onDidChangeActiveTextEditor((editor) => {
-		if (editor) {
-			let importEffectsActivated = getImportEffectsActivated(context);
-			importEffectsActivated = applyImportEffectsIfLatex(editor.document, importEffectsActivated);
-			setImportEffectsActivated(context, importEffectsActivated);
-		}
-	});
+	// vscode.window.onDidChangeActiveTextEditor((editor) => {
+	// 	if (editor) {
+	// 		let importEffectsActivated = getImportEffectsActivated(context);
+	// 		importEffectsActivated = applyImportEffectsIfLatex(editor.document, importEffectsActivated);
+	// 		setImportEffectsActivated(context, importEffectsActivated);
+	// 	}
+	// });
 
-	logMessage("Applied import effects.");
+	logMessage("Import effects are activated.");
 }
 
 export function importTextDeactivate(importEffectsActivated: boolean = true): boolean {
 	const editor = vscode.window.activeTextEditor;
 	if (!hasLatexFileOpen()) {
 		if (!importEffectsActivated) {
-			return importEffectsActivated;
+			return importEffectsActivated; //false
 		}
 		if (editor) {
 			removeImportHighlights(editor);
@@ -118,5 +118,5 @@ export function importTextDeactivate(importEffectsActivated: boolean = true): bo
 		logMessage("Removed all import link effects.");
 		importEffectsActivated = false;
 	}
-	return importEffectsActivated;
+	return importEffectsActivated; //false
 }

@@ -16,7 +16,7 @@ function getInputEffectsActivated(context: vscode.ExtensionContext): boolean {
 	return context.globalState.get("inputEffectsActivated", false);
 }
 
-function applyInputEffectsIfLatex(document: vscode.TextDocument, inputEffectsActivated: boolean): boolean {
+function createInputEffectsIfLatex(document: vscode.TextDocument, inputEffectsActivated: boolean): boolean {
 	const editor = vscode.window.activeTextEditor;
 
 	if (!editor || !document) {
@@ -25,8 +25,9 @@ function applyInputEffectsIfLatex(document: vscode.TextDocument, inputEffectsAct
 
 	if (hasLatexFileOpen()) {
 		applyInputHighlights(editor);
+
 		if (inputEffectsActivated) {
-			return inputEffectsActivated;
+			return inputEffectsActivated; //true
 		}
 
 		if (!inputDocumentLinkDisposable) {
@@ -52,15 +53,15 @@ export function inputTextActivate(context: vscode.ExtensionContext) {
 	setInputEffectsActivated(context, false);
 
 	if (editor) {
-		let inputEffectsActivated = getInputEffectsActivated(context);
-		inputEffectsActivated = applyInputEffectsIfLatex(editor.document, inputEffectsActivated);
+		let inputEffectsActivated = getInputEffectsActivated(context); //false
+		inputEffectsActivated = createInputEffectsIfLatex(editor.document, inputEffectsActivated);
 		setInputEffectsActivated(context, inputEffectsActivated);
 	}
 
 	context.subscriptions.push(
 		vscode.workspace.onDidOpenTextDocument((document: vscode.TextDocument) => {
 			let inputEffectsActivated = getInputEffectsActivated(context);
-			inputEffectsActivated = applyInputEffectsIfLatex(document, inputEffectsActivated);
+			inputEffectsActivated = createInputEffectsIfLatex(document, inputEffectsActivated);
 			setInputEffectsActivated(context, inputEffectsActivated);
 		}),
 		vscode.workspace.onDidCloseTextDocument(() => {
@@ -71,35 +72,35 @@ export function inputTextActivate(context: vscode.ExtensionContext) {
 		vscode.workspace.onDidChangeTextDocument((event) => {
 			if (editor && editor.document === event.document) {
 				let inputEffectsActivated = false;
-				inputEffectsActivated = applyInputEffectsIfLatex(editor.document, inputEffectsActivated);
+				inputEffectsActivated = createInputEffectsIfLatex(editor.document, inputEffectsActivated);
 				setInputEffectsActivated(context, inputEffectsActivated);
 			}
 		}),
 		vscode.window.onDidChangeActiveTextEditor((editor) => {
 			if (editor) {
 				let inputEffectsActivated = getInputEffectsActivated(context);
-				inputEffectsActivated = applyInputEffectsIfLatex(editor.document, inputEffectsActivated);
+				inputEffectsActivated = createInputEffectsIfLatex(editor.document, inputEffectsActivated);
 				setInputEffectsActivated(context, inputEffectsActivated);
 			}
 		})
 	);
 
-	vscode.window.onDidChangeActiveTextEditor((editor) => {
-		if (editor) {
-			let inputEffectsActivated = getInputEffectsActivated(context);
-			inputEffectsActivated = applyInputEffectsIfLatex(editor.document, inputEffectsActivated);
-			setInputEffectsActivated(context, inputEffectsActivated);
-		}
-	});
+	// vscode.window.onDidChangeActiveTextEditor((editor) => {
+	// 	if (editor) {
+	// 		let inputEffectsActivated = getInputEffectsActivated(context);
+	// 		inputEffectsActivated = createInputEffectsIfLatex(editor.document, inputEffectsActivated);
+	// 		setInputEffectsActivated(context, inputEffectsActivated);
+	// 	}
+	// });
 
-	logMessage("Applied input effects.");
+	logMessage("Input effects are activated.");
 }
 
 export function inputTextDeactivate(inputEffectsActivated: boolean = true): boolean {
 	const editor = vscode.window.activeTextEditor;
 	if (!hasLatexFileOpen()) {
 		if (!inputEffectsActivated) {
-			return inputEffectsActivated;
+			return inputEffectsActivated; //false
 		}
 		if (editor) {
 			removeInputHighlights(editor);
@@ -115,5 +116,5 @@ export function inputTextDeactivate(inputEffectsActivated: boolean = true): bool
 		logMessage("Removed all input link effects.");
 		inputEffectsActivated = false;
 	}
-	return inputEffectsActivated;
+	return inputEffectsActivated; //false
 }

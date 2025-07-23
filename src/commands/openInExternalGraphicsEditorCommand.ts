@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { createFile, createSVGFile, getFullPath, openFileInTab } from "../utils/fileUtils";
 import path from "path";
-import { addSvgToWatchlist } from "../utils/fileWatchers";
+import { addSvgToWatchlist } from "../utils/fileWatchersChokidar";
 import { openInInkscape } from "../utils/inkscapeUtils";
 import { addCachedFiles } from "../utils/cacheUtils";
 
@@ -35,9 +35,11 @@ export function openInExternalGraphicsEditor(arg: any) {
 		return;
 	}
 
-	addCachedFiles(imageFullPath);
-
-	addSvgToWatchlist(imageFullPath);
+	const chokidarIsUsed = vscode.workspace.getConfiguration("latex-helper").get<boolean>("useChokidar", false);
+	if (chokidarIsUsed) {
+		addCachedFiles(imageFullPath);
+		addSvgToWatchlist(imageFullPath);
+	}
 
 	openInInkscape(imageFullPath);
 }

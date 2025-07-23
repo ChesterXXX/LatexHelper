@@ -1,16 +1,16 @@
 import * as fs from "fs";
-import { addPdfTexToWatchlist, addSvgToWatchlist, removePdfTexFromWatchlist, removeSvgFromWatchlist } from "./fileWatchers";
+import { addPdfTexToWatchlist, addSvgToWatchlist, removePdfTexFromWatchlist, removeSvgFromWatchlist } from "./fileWatchersChokidar";
 import { logMessage } from "../extension";
 import { getLocalConfigFileWatchList, setLocalConfigFileWatchList } from "./localConfigUtils";
 
 export function watchCachedFiles() {
 	const cachedFiles = getLocalConfigFileWatchList();
-	if(!cachedFiles){
+	if (!cachedFiles) {
 		logMessage("Invalid cached watchlist");
 		return;
 	}
 
-	logMessage(`Cached file watchlist:\n${cachedFiles.join('\n')}`);
+	logMessage(`Cached file watchlist:\n${cachedFiles.join("\n")}`);
 
 	cachedFiles.forEach((imageFullPath) => {
 		const svgFilePath = `${imageFullPath}.svg`;
@@ -42,7 +42,7 @@ export function watchCachedFiles() {
 
 export function addCachedFiles(filename: string) {
 	const cachedFiles = getLocalConfigFileWatchList();
-	if(!cachedFiles){
+	if (!cachedFiles) {
 		logMessage("Invalid cached watchlist");
 		return;
 	}
@@ -54,21 +54,10 @@ export function addCachedFiles(filename: string) {
 
 export function removeCachedFiles(filename: string) {
 	const cachedFiles = getLocalConfigFileWatchList();
-	if(!cachedFiles){
+	if (!cachedFiles) {
 		logMessage("Invalid cached watchlist");
 		return;
 	}
 	const updatedCache = cachedFiles.filter((file) => file !== filename);
 	setLocalConfigFileWatchList(updatedCache);
 }
-
-// function saveCachedFiles(files: string[]): void {
-// 	const cachePath = getCacheFilePath();
-// 	try {
-// 		const jsonData = JSON.stringify(files, null, 2);
-// 		fs.writeFileSync(cachePath, jsonData, "utf-8");
-// 		logMessage("Saved files to watch in cache.");
-// 	} catch (error) {
-// 		vscode.window.showErrorMessage(`Error saving cached files: ${error}`);
-// 	}
-// }

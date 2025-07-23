@@ -4,6 +4,7 @@ import * as fs from "fs";
 import { logMessage } from "../extension";
 import { generateCitationKey } from "./citationKeyUtils";
 import { removeAccents, sanitizeString } from "./textUtils";
+import { latexWorkshopFormatBib } from "./latexWorkshopUtils";
 
 function autosortBibFileByKey(): boolean {
 	return vscode.workspace.getConfiguration("latex-helper").get<boolean>("autosortBibFile", true);
@@ -30,10 +31,10 @@ function formatBibEntryInput(bibEntry: bibtexParser.Entry, newKey = ""): string 
 	if (newKey) {
 		bibInput = bibInput.replace(bibEntry.key, newKey);
 	}
-	const regex = /([A-Za-z0-9\-]+)\s*=\s*{([^}]+)}/g;
-	bibInput = bibInput.replace(regex, (match, p1, p2) => {
-		return `${p1.toLowerCase()} = {${p2}}`;
-	});
+	// const regex = /([A-Za-z0-9\-]+)\s*=\s*{([^}]+)}/g;
+	// bibInput = bibInput.replace(regex, (match, p1, p2) => {
+	// 	return `${p1.toLowerCase()} = {${p2}}`;
+	// });
 
 	return bibInput;
 }
@@ -239,19 +240,20 @@ export async function convertCitationKeys(filePath: string) {
 		if (bibData && bibData.entries && bibData.entries.length > 0) {
 			const response = await vscode.window.showWarningMessage("Converting the citation keys might break your project! Are you sure?", "Yes", "No");
 			if (response === "Yes") {
-				logMessage(`Detected entries before formatting: ${bibData.entries.length}`);
+				logMessage(`Detected entries before changing citation keys: ${bibData.entries.length}`);
 				let modifiedBibStr = "";
 				bibData.entries.forEach((entry) => {
 					const newKey = generateCitationKey(entry);
 					modifiedBibStr += formatBibEntryInput(entry, newKey) + "\n";
 				});
 				const modifiedBibData = bibtexParser.parse(modifiedBibStr);
-				logMessage(`Entries after formatting: ${modifiedBibData.entries.length}`);
+				logMessage(`Entries after changing citation keys: ${modifiedBibData.entries.length}`);
 				if (autosortBibFileByKey()) {
 					modifiedBibData.entries.sort((a, b) => (a.key.toLocaleLowerCase() < b.key.toLocaleLowerCase() ? -1 : 1));
 				}
 				writeBibFile(modifiedBibData, filePath);
 				logMessage(`Converted all citation keys in bib file: ${filePath}`);
+				latexWorkshopFormatBib();
 			} else {
 				logMessage(`Canceled converting: ${filePath}`);
 			}

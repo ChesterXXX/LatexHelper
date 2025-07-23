@@ -3,9 +3,10 @@ import { inputTextActivate, inputTextDeactivate } from "./modules/inputItemModul
 import { importTextActivate, importTextDeactivate } from "./modules/importItemModule";
 import { figureSnippetActivate, figureSnippetDeactivate } from "./modules/figureModule";
 import { watchCachedFiles } from "./utils/cacheUtils";
-import { setupWatchers } from "./utils/fileWatchers";
+import { setupWatchersChokidar } from "./utils/fileWatchersChokidar";
 import { bibFileActivate } from "./modules/bibModule";
 import { activateFuse } from "./modules/fuzzySubmodule";
+import { setupWatchersVSCodeAPI } from "./utils/fileWatchersVSCodeAPI";
 
 const outputChannel = vscode.window.createOutputChannel("LaTeX Helper");
 
@@ -18,6 +19,10 @@ export function logMessage(message: string, error: any = undefined) {
 
 function isFigureSnippetAcitvated(): boolean {
 	return vscode.workspace.getConfiguration("latex-helper").get<boolean>("figureSnippetActivated", false);
+}
+
+function isChokidarUsed(): boolean {
+	return vscode.workspace.getConfiguration("latex-helper").get<boolean>("useChokidar", false);
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -40,8 +45,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 	inputTextActivate(context);
 	importTextActivate(context);
-	setupWatchers();
-	watchCachedFiles();
+	if (isChokidarUsed()) {
+		setupWatchersChokidar();
+		watchCachedFiles();
+	} else {
+		setupWatchersVSCodeAPI(context);
+	}
 	if (isFigureSnippetAcitvated()) {
 		figureSnippetActivate(context);
 	}
